@@ -23,8 +23,11 @@ public final class TracesMapper
     public void serialize( final MapGenerator gen )
     {
         final ListMultimap<String, Trace> traceChildren = ArrayListMultimap.create();
+        long maxDuration = 0;
         for ( Trace trace : traces )
         {
+            final long d = trace.getDuration().toMillis();
+            maxDuration = d > maxDuration ? d : maxDuration;
             if ( trace.getParentId() != null )
             {
                 traceChildren.put( trace.getParentId(), trace );
@@ -40,6 +43,7 @@ public final class TracesMapper
             }
         }
         gen.end();
+        gen.value( "maxDuration", maxDuration );
     }
 
     private void processChildren( final ListMultimap<String, Trace> traceChildren, final MapGenerator gen, final Trace trace )

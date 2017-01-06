@@ -32,6 +32,10 @@ public final class TraceHandler
         {
             return;
         }
+        if ( "com.enonic.app.livetrace:/services/sampling/sampling.js".equals( trace.get( "script" ) ) )
+        {
+            return;
+        }
         System.out.println( trace.getName() + " -> " + trace.get( "method" ) + " " + trace.get( "path" ) + " (" +
                                 trace.getDuration().toString().substring( 2 ).toLowerCase() + ")" );
 
