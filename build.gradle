@@ -33,6 +33,7 @@ dependencies {
     include "com.enonic.xp:lib-io:${xpVersion}"
     include "com.enonic.xp:lib-auth:${xpVersion}"
     include "com.enonic.xp:lib-websocket:${xpVersion}"
+    include "com.enonic.xp:lib-task:${xpVersion}"
 }
 
 repositories {

@@ -12,14 +12,67 @@
     <button class="home-button">
         <span>Live Trace</span>
     </button>
+    <div class="lt-appbarmiddle">
+        <button id="startSampling" class="lt-sampling-button lt-button">
+            <span>Start Sampling Data</span>
+        </button>
+        <button id="stopSampling" class="lt-sampling-stop-button lt-button" style="display: none;">
+            <span>Stop Sampling Data</span>
+        </button>
+    </div>
 </div>
 
-<div>
+<div class="lt-main-container">
+    <ul class="lt-tabs">
+        <li class="lt-tab"><a href="#dashboard">Dashboard</a></li>
+        <li class="lt-tab lt-tab-selected"><a href="#http">HTTP</a></li>
+        <li class="lt-tab"><a href="#websocket">WebSocket</a></li>
+        <li class="lt-tab"><a href="#tasks">Tasks</a></li>
+    </ul>
+
+    <div class="lt-http-toolbar">
+        <button class="lt-button lt-active"><span>All</span></button>
+        <button class="lt-button"><span>Page</span></button>
+        <button class="lt-button"><span>Component</span></button>
+        <button class="lt-button"><span>Service</span></button>
+        <button class="lt-button"><span>Asset</span></button>
+        <button class="lt-button"><span>Image</span></button>
+        <button class="lt-button"><span>Other</span></button>
+
+        <div class="lt-http-toolbar-right">
+            <span class="lt-request-label">0 Requests</span>
+            <input type="search" class="lt-filter-url" placeholder="Filter URL" id="filterUrl"/>
+        </div>
+    </div>
+
+    <div class="lt-http-panel">
+        <div class="lt-http-sampling-message" style="display: none;">
+            <h2>Sampling data</h2>
+            <h3 id="samplingSeconds"></h3>
+        </div>
+        <div class="lt-http-requests">
+            <table class="lt-http-req-table">
+                <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Method</th>
+                    <th>Path</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Time</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 </div>
+
 <script type="text/javascript">var CONFIG = {portalAssetsUrl: '{{adminUiAssetsUrl}}', appId: 'livetrace'};
 var SVC_URL = '{{svcUrl}}';</script>
-<script type="text/javascript" src="{{launcherJsUrl}}"></script>
+<!--<script type="text/javascript" src="{{launcherJsUrl}}"></script>-->
 <script type="text/javascript" src="{{assetsUri}}/js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/livetrace-tool.js"></script>
 </body>

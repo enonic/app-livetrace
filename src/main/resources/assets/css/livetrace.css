@@ -10,9 +10,11 @@ body {
     right: 0;
     left: 0;
     margin: 0;
+
+    overflow-y: hidden;
 }
 
-body > .container-fluid {
+body > .lt-main-container {
     height: calc(100% - 44px);
 }
 
@@ -71,4 +73,300 @@ body > .container-fluid {
     font-size: 15px;
     text-transform: uppercase;
     line-height: inherit;
+}
+
+.lt-button {
+    width: auto;
+    border: 0;
+    font-family: "Open Sans", sans-serif;
+    background-color: #dae0e1;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+    display: inline-block;
+    padding: 4px 19px 4px 19px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.lt-button span {
+    line-height: 24px;
+    font-size: 14px;
+    transition: color 0.2s ease-in-out;
+    -moz-transition: color 0.2s ease-in-out;
+    -webkit-transition: color 0.2s ease-in-out;
+    -o-transition: color 0.2s ease-in-out;
+    color: white;
+}
+
+.lt-appbarmiddle {
+    -ms-flex-order: 2;
+    -webkit-order: 2;
+    order: 2;
+    flex: 0.8;
+}
+
+.lt-sampling-button {
+    background-color: #71BF41;
+    margin-top: 6px;
+}
+
+.lt-sampling-stop-button {
+    background-color: #C72808;
+    margin-top: 6px;
+}
+
+.lt-main-container {
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+}
+
+.lt-tabs {
+    display: flex;
+    align-content: flex-start;
+    border-bottom: 2px solid #dadfe0;
+    list-style-type: none;
+    padding: 0;
+
+    /*position: relative;*/
+    /*overflow-x: auto;*/
+    /*overflow-y: hidden;*/
+    height: 48px;
+    width: 100%;
+    background-color: #fff;
+    margin: 0 auto;
+    white-space: nowrap;
+
+    font-size: 14px;
+    font-family: "Roboto", sans-serif;
+    font-weight: normal;
+}
+
+.lt-tab {
+    display: flex;
+
+    -webkit-box-flex: 1;
+    -webkit-flex-grow: 1;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+}
+
+.lt-tab.lt-tab-selected {
+    border-bottom: 2px double #50a8f9;
+}
+
+.lt-tab.lt-tab-selected a {
+    color: #50a8f9;
+}
+
+.lt-tabs .lt-tab {
+    display: inline-block;
+    text-align: center;
+    line-height: 48px;
+    height: 44px;
+    padding: 0;
+    margin: 0;
+
+    max-width: 150px;
+}
+
+.lt-tabs a {
+    text-decoration: none;
+    color: rgb(0, 0, 0);
+}
+
+.lt-tabs .lt-tab a:hover, .lt-tabs .lt-tab a.active {
+    color: #50a8f9;
+}
+
+.lt-http-toolbar {
+    display: flex;
+    align-content: flex-start;
+    border-bottom: 1px solid #dadfe0;
+
+    height: 48px;
+    width: 100%;
+    background-color: #fff;
+    /*margin: 0 auto;*/
+    /*white-space: nowrap;*/
+
+    font-size: 14px;
+    font-family: "Roboto", sans-serif;
+    font-weight: normal;
+}
+
+.lt-http-toolbar .lt-button {
+    margin-top: 7px;
+    margin-bottom: 7px;
+    margin-left: 12px;
+}
+
+.lt-http-toolbar .lt-button span {
+    color: rgb(0, 0, 0);
+}
+
+.lt-http-toolbar .lt-button.lt-active {
+    background-color: #50a8f9;
+}
+
+.lt-http-toolbar .lt-button.lt-active span {
+    color: #fff
+}
+
+.lt-http-toolbar .lt-button:first-child {
+    margin-left: 20px;
+}
+
+.lt-filter-url {
+    float: right;
+}
+
+.lt-http-toolbar-right {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.lt-http-toolbar input {
+    height: 24px;
+
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    box-shadow: none;
+    box-sizing: content-box;
+    border: 1px solid #ccc;
+    font-family: "Open Sans", sans-serif;
+    font-size: 15px;
+    background-color: #FFF;
+    display: block;
+
+    margin-right: 20px;
+}
+
+.lt-request-label {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    margin-right: 20px;
+}
+
+.lt-http-panel {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    font-family: "Roboto", sans-serif;
+    font-weight: normal;
+
+    justify-content: center;
+    align-items: center;
+}
+
+.lt-http-sampling-message {
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    color: #999;
+    padding-bottom: 200px;
+}
+
+.lt-http-requests {
+    display: flex;
+    flex-direction: row;
+
+    justify-content: center;
+    align-items: flex-start;
+
+    flex: 1;
+    height: 100%;
+
+    /*overflow-y: scroll;*/
+}
+
+table.lt-http-req-table {
+    width: 100%;
+    height: 100%;
+    /*padding-left: 20px;*/
+}
+
+table.lt-http-req-table, tr td {
+    /*border: 1px solid red;*/
+    overflow-wrap: normal;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+table.lt-http-req-table tbody {
+    display: block;
+    height: calc(100% - 150px);
+    overflow: auto;
+    overflow-y: scroll;
+}
+
+table.lt-http-req-table thead, tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed; /* even columns width , fix width of table too*/
+}
+
+table.lt-http-req-table thead {
+    width: calc(100% - 1em); /* scrollbar is average 1em/16px width, remove it from thead width */
+}
+
+table.lt-http-req-table tbody tr:nth-child(odd) {
+    background-color: #ecf2f9;
+}
+
+table.lt-http-req-table th:nth-child(1), table.lt-http-req-table td:nth-child(1) {
+    width: 5%;
+}
+
+table.lt-http-req-table th:nth-child(2), table.lt-http-req-table td:nth-child(2) {
+    width: 10%;
+}
+
+table.lt-http-req-table th:nth-child(3), table.lt-http-req-table td:nth-child(3) {
+    width: 55%;
+}
+
+table.lt-http-req-table th:nth-child(4), table.lt-http-req-table td:nth-child(4) {
+    width: 20%;
+}
+
+table.lt-http-req-table th:nth-child(5), table.lt-http-req-table td:nth-child(5) {
+    width: 5%;
+}
+
+table.lt-http-req-table th:nth-child(6), table.lt-http-req-table td:nth-child(6) {
+    width: 5%;
+}
+
+table.lt-http-req-table td:nth-child(1) {
+    text-align: center;
+}
+
+table.lt-http-req-table td:nth-child(2) {
+    text-align: center;
+}
+
+table.lt-http-req-table td:nth-child(3) {
+    text-align: left;
+}
+
+table.lt-http-req-table td:nth-child(4) {
+    text-align: center;
+}
+
+table.lt-http-req-table td:nth-child(5) {
+    text-align: right;
+}
+
+table.lt-http-req-table td:nth-child(6) {
+    text-align: right;
 }
