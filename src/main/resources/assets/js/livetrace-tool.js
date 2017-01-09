@@ -110,8 +110,8 @@
 
     var displayTraceTable = function (traces, maxDuration) {
         var i, l = traces.length, trace, row, rows = [];
-        if (maxDuration <= 1000) {
-            maxDuration = 1000;
+        if (maxDuration <= 500) {
+            maxDuration = 500;
         } else {
             maxDuration = Math.ceil(maxDuration / 1000) * 1000;
         }
@@ -120,7 +120,7 @@
         $('.lt-request-label').text(l + ' Requests');
         for (i = 0; i < l; i++) {
             trace = traces[i];
-            row = traceToRow(trace, maxDuration);
+            row = traceToRow(trace, maxDuration).addClass(i % 2 == 0 ? 'lt-even' : 'lt-odd');
             rows.push(row);
         }
 
@@ -129,7 +129,7 @@
     };
 
     var traceToRow = function (trace, maxDuration) {
-        var tr = $('<tr>');
+        var tr = $('<tr>').on('click', rowClick).data('t', trace.children).data('md', maxDuration).data('s', new Date(trace.start));
         var traceData = trace.data || {};
         var tdStatus = $('<td>').text(200);
         var tdMethod = $('<td>').text(traceData.method || '');
@@ -140,19 +140,20 @@
         var tdTimeBar = $('<td colspan="4">');
 
         var barWidth = Math.ceil((trace.duration / maxDuration) * 100);
-        var bar = makeBar(barWidth, trace.duration + 'ms', traceSpeed(trace.duration));
+        var bar = makeBar(barWidth, 0, traceSpeed(trace.duration));
         tdTimeBar.append(bar);
         tr.append([tdStatus, tdMethod, tdPath, tdType, tdSize, tdDuration, tdTimeBar]);
         return tr;
     };
 
-    var makeBar = function (widthPercent, text, clz) {
+    var makeBar = function (widthPercent, offset, clz) {
         var bar = $('<div class="progress-bar horizontal">');
         var track = $('<div class="progress-track">');
         var fill = $('<div class="progress-fill">').css('width', widthPercent + '%').addClass(clz);
-        var textEl = $('<span>');//.text(text);
+        if (offset) {
+            fill.css('left', offset + '%');
+        }
 
-        fill.append(textEl);
         track.append(fill);
         bar.append(track);
         return bar;
@@ -166,11 +167,9 @@
     };
 
     var traceSpeed = function (duration) {
-        if (duration < 100) {
+        if (duration < 250) {
             return 'fast'
-        } else if (duration < 500) {
-            return '';
-        } else if (duration < 2000) {
+        } else if (duration < 1000) {
             return 'slow';
         }
         return 'slower';
@@ -187,6 +186,64 @@
             sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
             i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-    }
+    };
+
+    var rowClick = function (e) {
+        var currentSelected = $(this).next('tr').hasClass('lt-http-req-remove');
+        $('.lt-http-req-remove').remove();
+        if (currentSelected) {
+            return;
+        }
+
+        var subTraces = $(this).data('t');
+        console.log(subTraces);
+        if (!subTraces || subTraces.length === 0) {
+            return;
+        }
+        var maxDuration = $(this).data('md');
+        var oddEven = $(this).hasClass('lt-even') ? 'lt-even' : 'lt-odd';
+        var parentStart = $(this).data('s');
+
+        var head = $(
+            '<tr class="lt-http-req-remove lt-sub-header"><td>Trace</td><td></td><td>Script / Class</td><td>Application</td><td></td><td></td><td class="lt-http-req-sub-time" colspan="4">Execution time</tr>')
+            .addClass(oddEven);
+        var i, l = subTraces.length, bodyTr, bodyTrs = [head];
+
+        for (i = 0; i < l; i++) {
+            bodyTr = subtraceToRow(subTraces[i], maxDuration, parentStart);
+            bodyTr.addClass(oddEven);
+            bodyTrs.push(bodyTr);
+        }
+        $(this).after(bodyTrs);
+    };
+
+    var subtraceToRow = function (trace, maxDuration, parentStart) {
+        var traceData = trace.data || {};
+        var script = traceData.script, app = '';
+        if (script) {
+            var p = traceData.script.indexOf(':');
+            if (p > -1) {
+                app = script.substring(0, p);
+                script = script.substring(p + 1);
+            }
+        }
+
+        var tr = $('<tr class="lt-http-req-remove">');
+        var tdTrace = $('<td>').text('Page');
+        var tdMethod = $('<td>');
+        var tdScriptClass = $('<td>').text(script).attr('title', script);
+        var tdApp = $('<td>').text(app || '');
+        var tdSize = $('<td>');
+        var tdDuration = $('<td>').text(trace.duration + ' ms');
+        var tdTimeBar = $('<td colspan="4">');
+
+        var offset = new Date(trace.start).getTime() - parentStart.getTime();
+        var offsetWidth = Math.ceil((offset / maxDuration) * 100);
+        var barWidth = Math.ceil((trace.duration / maxDuration) * 100);
+        var bar = makeBar(barWidth, offsetWidth, '');
+        tdTimeBar.append(bar);
+        tr.append([tdTrace, tdMethod, tdScriptClass, tdApp, tdSize, tdDuration, tdTimeBar]);
+        return tr;
+    };
 
 }($, SVC_URL));

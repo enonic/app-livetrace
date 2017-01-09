@@ -1,6 +1,9 @@
 package com.enonic.app.livetrace;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -52,15 +55,20 @@ public final class TracesMapper
 
         new TraceMapper( trace ).serialize( gen );
 
-        gen.array( "children" );
         if ( traceChildren.containsKey( trace.getId() ) )
         {
-            for ( Trace child : traceChildren.get( trace.getId() ) )
+            gen.array( "children" );
+            final List<Trace> children = traceChildren.get( trace.getId() ).
+                stream().
+                sorted( Comparator.comparing( Trace::getStartTime ) ).
+                collect( Collectors.toList() );
+
+            for ( Trace child : children )
             {
                 processChildren( traceChildren, gen, child );
             }
+            gen.end();
         }
-        gen.end();
 
         gen.end();
     }
