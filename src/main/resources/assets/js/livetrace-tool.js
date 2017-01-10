@@ -131,7 +131,7 @@
     var traceToRow = function (trace, maxDuration) {
         var tr = $('<tr>').on('click', rowClick).data('t', trace.children).data('md', maxDuration).data('s', new Date(trace.start));
         var traceData = trace.data || {};
-        var tdStatus = $('<td>').text(200);
+        var tdStatus = $('<td>').text(traceData.status);
         var tdMethod = $('<td>').text(traceData.method || '');
         var tdPath = $('<td>').text(traceData.path || '').attr('title', traceData.path);
         var tdType = $('<td>').text(traceData.type || '');
@@ -207,14 +207,28 @@
         var head = $(
             '<tr class="lt-http-req-remove lt-sub-header"><td>Trace</td><td></td><td>Script / Class</td><td>Application</td><td></td><td></td><td class="lt-http-req-sub-time" colspan="4">Execution time</tr>')
             .addClass(oddEven);
-        var i, l = subTraces.length, bodyTr, bodyTrs = [head];
 
-        for (i = 0; i < l; i++) {
-            bodyTr = subtraceToRow(subTraces[i], maxDuration, parentStart);
+        var i, l, traces = [], bodyTr, bodyTrs = [head];
+        flattenTraces(subTraces, traces);
+        for (i = 0, l = traces.length; i < l; i++) {
+            bodyTr = subtraceToRow(traces[i], maxDuration, parentStart);
             bodyTr.addClass(oddEven);
             bodyTrs.push(bodyTr);
         }
         $(this).after(bodyTrs);
+    };
+
+    var flattenTraces = function (traces, res, level) {
+        res = res || [];
+        level = level || 0;
+        for (var i = 0, l = traces.length, tr; i < l; i++) {
+            tr = traces[i];
+            tr.l = level;
+            res.push(tr);
+            if (tr.children) {
+                flattenTraces(tr.children, res, level + 1);
+            }
+        }
     };
 
     var subtraceToRow = function (trace, maxDuration, parentStart) {
@@ -229,9 +243,16 @@
         }
 
         var tr = $('<tr class="lt-http-req-remove">');
-        var tdTrace = $('<td>').text('Page');
+        var traceText = '';
+        if (trace.name === 'renderComponent') {
+            traceText = capitalize(traceData.type);
+            script = traceData.path;
+        } else if (trace.name === 'controllerScript') {
+            traceText = 'Script';
+        }
+        var tdTrace = $('<td>').text(traceText);
         var tdMethod = $('<td>');
-        var tdScriptClass = $('<td>').text(script).attr('title', script);
+        var tdScriptClass = $('<td>').text(script).attr('title', script).css('padding-left', trace.l * 8 + 'px');
         var tdApp = $('<td>').text(app || '');
         var tdSize = $('<td>');
         var tdDuration = $('<td>').text(trace.duration + ' ms');
@@ -244,6 +265,10 @@
         tdTimeBar.append(bar);
         tr.append([tdTrace, tdMethod, tdScriptClass, tdApp, tdSize, tdDuration, tdTimeBar]);
         return tr;
+    };
+
+    var capitalize = function (v) {
+        return v && v.length ? v.charAt(0).toUpperCase() + v.slice(1) : '';
     };
 
 }($, SVC_URL));
