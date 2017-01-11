@@ -88,7 +88,7 @@ var setupRequestRateTask = function () {
         task: function (id) {
             do {
                 broadcastRequestRate();
-                taskLib.sleep(2000);
+                taskLib.sleep(1000);
             } while (!shutdownRequest);
             log.info('Broadcasting request-rate task terminated');
         }

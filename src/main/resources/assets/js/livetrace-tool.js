@@ -9,7 +9,8 @@
         h: 0,
         w: 0,
         yScale: 10,
-        chart: null
+        chart: null,
+        rescaleCheck: 0
     };
     var BAR_COUNT = 20;
 
@@ -19,6 +20,7 @@
         initRequestRateData();
         wsConnect();
 
+        setInterval(redrawRequestRate, 1000);
         window.addEventListener('resize', function (e) {
             initRequestRateData();
         });
@@ -212,7 +214,6 @@
         }
 
         var subTraces = $(this).data('t');
-        console.log(subTraces);
         if (!subTraces || subTraces.length === 0) {
             return;
         }
@@ -345,29 +346,55 @@
         requestRate.data.push(reqPoint);
 
         if (reqPerSec > requestRate.yScale) {
-            // re-scale data height in chart
             requestRate.yScale = Math.ceil(reqPerSec * 1.2);
             console.log('New Req max: ' + requestRate.yScale);
-            for (var i = 0, l = requestRate.data.length; i < l; i++) {
-                var d = requestRate.data[i];
-                d.value = scaleValue(d.source);
-            }
-
-            // refresh scaled bars in chart
-            var h = requestRate.h, y = requestRate.y;
-            requestRate.chart.selectAll("rect")
-                .attr("y", function (d) {
-                    return h - y(d.value) - .5;
-                })
-                .attr("height", function (d) {
-                    return y(d.value);
-                });
+            rescaleBars();
+        } else {
+            checkDownScale();
         }
-        redrawRequestRate();
     };
 
     var scaleValue = function (v) {
         return (v / requestRate.yScale) * requestRate.h;
+    };
+
+    var checkDownScale = function () {
+        var t = requestRate.rescaleCheck || 0;
+        var n = new Date().getTime();
+        if (n - t > 10000) {
+            var max = 0;
+            for (var i = 0, l = requestRate.data.length; i < l; i++) {
+                if (requestRate.data[i].source > max) {
+                    max = requestRate.data[i].source;
+                }
+            }
+            max = Math.max(Math.ceil(max * 1.2), 10);
+            if (max < requestRate.yScale) {
+                requestRate.yScale = max;
+                console.log('New Req max: ' + requestRate.yScale);
+                rescaleBars();
+            }
+
+            requestRate.rescaleCheck = new Date().getTime();
+        }
+    };
+
+    var rescaleBars = function () {
+        // re-scale data height in chart
+        for (var i = 0, l = requestRate.data.length; i < l; i++) {
+            var d = requestRate.data[i];
+            d.value = scaleValue(d.source);
+        }
+
+        // refresh scaled bars in chart
+        var h = requestRate.h, y = requestRate.y;
+        requestRate.chart.selectAll("rect")
+            .attr("y", function (d) {
+                return h - y(d.value) - .5;
+            })
+            .attr("height", function (d) {
+                return y(d.value);
+            });
     };
 
     var redrawRequestRate = function () {
