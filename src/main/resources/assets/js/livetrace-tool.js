@@ -2,6 +2,12 @@
     "use strict";
     var ws, connected, keepAliveIntervalId;
     var samplingId, samplingIntervalId;
+    var sampling = {
+        traces: [],
+        maxDuration: 500,
+        httpFilterType: '',
+        httpFilterUrl: ''
+    };
     var requestRate = {
         data: null,
         x: null,
@@ -17,6 +23,29 @@
     $(function () {
         $('#startSampling').on('click', startSampling);
         $('#stopSampling').on('click', stopSampling);
+
+        $('#httpTraceAll').on('click', {t: 'all'}, httpApplyFilter);
+        $('#httpTracePage').on('click', {t: 'page'}, httpApplyFilter);
+        $('#httpTraceComponent').on('click', {t: 'component'}, httpApplyFilter);
+        $('#httpTraceService').on('click', {t: 'service'}, httpApplyFilter);
+        $('#httpTraceAsset').on('click', {t: 'asset'}, httpApplyFilter);
+        $('#httpTraceImage').on('click', {t: 'image'}, httpApplyFilter);
+        $('#httpTraceOther').on('click', {t: 'other'}, httpApplyFilter);
+
+        var typingTimer, doneTypingInterval = 800;
+        var searchInput = $('#filterUrl');
+        searchInput.on('keyup', function (e) {
+            clearTimeout(typingTimer);
+            if (e.which === 13) {
+                httpApplyUrlFilter();
+                return;
+            }
+            typingTimer = setTimeout(httpApplyUrlFilter, doneTypingInterval);
+        });
+        searchInput.on('keydown', function () {
+            clearTimeout(typingTimer);
+        });
+
         initRequestRateData();
         wsConnect();
 
@@ -24,7 +53,6 @@
         window.addEventListener('resize', function (e) {
             initRequestRateData();
         });
-
     });
 
 
@@ -120,13 +148,71 @@
         }).done(function (resp) {
             console.log(resp);
             samplingId = undefined;
-            displayTraceTable(resp.traces, resp.maxDuration);
+
+            sampling.traces = resp.traces;
+            sampling.maxDuration = resp.maxDuration;
+            displayTraceTable();
         }).fail(function (jqXHR, textStatus) {
 
         });
     };
 
-    var displayTraceTable = function (traces, maxDuration) {
+    var httpApplyUrlFilter = function (e) {
+        sampling.httpFilterUrl = $('#filterUrl').val().trim();
+        displayTraceTable();
+    };
+
+    var httpApplyFilter = function (e) {
+        $('.lt-http-toolbar .lt-active').removeClass('lt-active');
+        $(this).addClass('lt-active').blur();
+
+        sampling.httpFilterType = e.data.t;
+        sampling.httpFilterUrl = $('#filterUrl').val().trim();
+        displayTraceTable();
+    };
+
+    var httpFilters = {
+        'all': null,
+        'page': function (t) {
+            return t.data.type.indexOf('text/html') > -1;
+        },
+        'component': function (t) {
+            return t.data.path.indexOf('/_/component/') > -1;
+        },
+        'service': function (t) {
+            return t.data.path.indexOf('/_/service/') > -1;
+        },
+        'asset': function (t) {
+            return t.data.path.indexOf('/_/asset/') > -1;
+        },
+        'image': function (t) {
+            return t.data.path.indexOf('/_/image/') > -1;
+        },
+        'other': function (t) {
+            return !httpFilters.page(t) && !httpFilters.component(t) && !httpFilters.service(t) && !httpFilters.asset(t) &&
+                   !httpFilters.image(t);
+        }
+    };
+
+    var filterTraces = function (traces) {
+        var f = httpFilters[sampling.httpFilterType];
+        if (!f && sampling.httpFilterUrl === '') {
+            return traces;
+        }
+        if (f) {
+            traces = traces.filter(f);
+        }
+        if (sampling.httpFilterUrl !== '') {
+            traces = traces.filter(function (t) {
+                return t.data.path.indexOf(sampling.httpFilterUrl) > -1;
+            });
+        }
+        return traces;
+    };
+
+    var displayTraceTable = function () {
+        var traces = filterTraces(sampling.traces);
+        var maxDuration = sampling.maxDuration;
         var i, l = traces.length, trace, row, rows = [];
         if (maxDuration <= 500) {
             maxDuration = 500;
@@ -209,9 +295,12 @@
     var rowClick = function (e) {
         var currentSelected = $(this).next('tr').hasClass('lt-http-req-remove');
         $('.lt-http-req-remove').remove();
+        $('.lt-http-sel').removeClass('lt-http-sel');
+
         if (currentSelected) {
             return;
         }
+        $(this).addClass('lt-http-sel');
 
         var subTraces = $(this).data('t');
         if (!subTraces || subTraces.length === 0) {
@@ -222,14 +311,14 @@
         var parentStart = $(this).data('s');
 
         var head = $(
-            '<tr class="lt-http-req-remove lt-sub-header"><td>Trace</td><td></td><td>Script / Class</td><td>Application</td><td></td><td></td><td class="lt-http-req-sub-time" colspan="4">Execution time</tr>')
+            '<tr class="lt-http-req-remove lt-http-sel lt-sub-header"><td>Trace</td><td></td><td>Script / Class</td><td>Application</td><td></td><td></td><td class="lt-http-req-sub-time" colspan="4">Execution time</tr>')
             .addClass(oddEven);
 
         var i, l, traces = [], bodyTr, bodyTrs = [head];
         flattenTraces(subTraces, traces);
         for (i = 0, l = traces.length; i < l; i++) {
             bodyTr = subtraceToRow(traces[i], maxDuration, parentStart);
-            bodyTr.addClass(oddEven);
+            bodyTr.addClass(oddEven).addClass('lt-http-sel');
             bodyTrs.push(bodyTr);
         }
         $(this).after(bodyTrs);
