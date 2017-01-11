@@ -2,18 +2,34 @@
     "use strict";
     var ws, connected, keepAliveIntervalId;
     var samplingId, samplingIntervalId;
+    var requestRate = {
+        data: null,
+        x: null,
+        y: null,
+        h: 0,
+        w: 0,
+        yScale: 10,
+        chart: null
+    };
+    var BAR_COUNT = 20;
 
     $(function () {
         $('#startSampling').on('click', startSampling);
         $('#stopSampling').on('click', stopSampling);
-        //wsConnect();
+        initRequestRateData();
+        wsConnect();
+
+        window.addEventListener('resize', function (e) {
+            initRequestRateData();
+        });
+
     });
 
 
     // WS - EVENTS
 
     var wsConnect = function () {
-        ws = new WebSocket(getWebSocketUrl(svcUrl + 'traceUrl'), ['trace']);
+        ws = new WebSocket(getWebSocketUrl(svcUrl + 'sampling'), ['livetrace']);
         ws.onopen = onWsOpen;
         ws.onclose = onWsClose;
         ws.onmessage = onWsMessage;
@@ -33,11 +49,12 @@
         clearInterval(keepAliveIntervalId);
         connected = false;
 
-        setTimeout(wsConnect, 2000); // attempt to reconnect
+        setTimeout(wsConnect, 5000); // attempt to reconnect
     };
 
     var onWsMessage = function (event) {
-        console.log('WS onWsMessage', event);
+        var reqSec = Number(event.data);
+        handleNewRequestRate(reqSec);
     };
 
     var getWebSocketUrl = function (path) {
@@ -45,7 +62,7 @@
         return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + path;
     };
 
-    //
+    // HTTP
     var startSampling = function () {
         console.log('Start sampling...');
         $('#startSampling').hide();
@@ -71,7 +88,6 @@
                 action: 'start'
             }
         }).done(function (resp) {
-            console.log(resp);
             samplingId = resp.id;
 
         }).fail(function (jqXHR, textStatus) {
@@ -269,6 +285,132 @@
 
     var capitalize = function (v) {
         return v && v.length ? v.charAt(0).toUpperCase() + v.slice(1) : '';
+    };
+
+    // Request Rate
+    var initRequestRateData = function () {
+        var elW = $('.lt-request-chart-cnt').width();
+        var w = Math.floor(elW / BAR_COUNT), h = 60;
+
+        var t = new Date().getTime();
+        if (!requestRate.data) {
+            requestRate.data = [];
+            for (var i = 0; i < BAR_COUNT; i++) {
+                requestRate.data.push({
+                    time: t,
+                    value: 0,
+                    source: 0
+                });
+            }
+        }
+
+        var x = d3.scaleLinear()
+            .domain([0, 1])
+            .range([0, w]);
+
+        var y = d3.scaleLinear()
+            .domain([0, 100])
+            .rangeRound([0, h]);
+
+
+        var chart = d3.select(".lt-request-chart")
+            .attr("width", w * requestRate.data.length - 1)
+            .attr("height", h);
+
+        chart.append("svg:line")
+            .attr("x1", 0)
+            .attr("x2", w * requestRate.data.length)
+            .attr("y1", h - .5)
+            .attr("y2", h - .5)
+            .attr("stroke", "#000");
+
+        chart.selectAll('rect').attr('width', w);
+
+        requestRate.x = x;
+        requestRate.y = y;
+        requestRate.h = h;
+        requestRate.w = w;
+        requestRate.chart = chart;
+    };
+
+    var handleNewRequestRate = function (reqPerSec) {
+        $('.lt-request-rate span').text(Math.ceil(reqPerSec));
+        console.log('REQ: ' + reqPerSec);
+        var reqPoint = {
+            time: new Date().getTime(),
+            value: scaleValue(reqPerSec),
+            source: reqPerSec
+        };
+        requestRate.data.shift();
+        requestRate.data.push(reqPoint);
+
+        if (reqPerSec > requestRate.yScale) {
+            // re-scale data height in chart
+            requestRate.yScale = Math.ceil(reqPerSec * 1.2);
+            console.log('New Req max: ' + requestRate.yScale);
+            for (var i = 0, l = requestRate.data.length; i < l; i++) {
+                var d = requestRate.data[i];
+                d.value = scaleValue(d.source);
+            }
+
+            // refresh scaled bars in chart
+            var h = requestRate.h, y = requestRate.y;
+            requestRate.chart.selectAll("rect")
+                .attr("y", function (d) {
+                    return h - y(d.value) - .5;
+                })
+                .attr("height", function (d) {
+                    return y(d.value);
+                });
+        }
+        redrawRequestRate();
+    };
+
+    var scaleValue = function (v) {
+        return (v / requestRate.yScale) * requestRate.h;
+    };
+
+    var redrawRequestRate = function () {
+        var data = requestRate.data;
+        var x = requestRate.x;
+        var y = requestRate.y;
+        var h = requestRate.h;
+        var w = requestRate.w;
+
+        var rect = requestRate.chart.selectAll("rect")
+            .data(data, function (d) {
+                return d.time;
+            });
+
+        rect.enter().insert("svg:rect", "line")
+            .attr("x", function (d, i) {
+                return x(i + 1) - .5;
+            })
+            .attr("y", function (d) {
+                return h - y(d.value) - .5;
+            })
+            .attr("width", w)
+            .attr("height", function (d) {
+                return y(d.value);
+            })
+            .transition()
+            .duration(800)
+            .attr("x", function (d, i) {
+                return x(i) - .5;
+            });
+
+        rect.transition()
+            .duration(800)
+            .attr("x", function (d, i) {
+                return x(i) - .5;
+            });
+
+        rect.exit().transition()
+            .duration(800)
+            .attr("x", function (d, i) {
+                return x(i - 1) - .5;
+            })
+            .remove();
     };
 
 }($, SVC_URL));

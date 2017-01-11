@@ -89,7 +89,7 @@ body > .lt-main-container {
 }
 
 .lt-button span {
-    line-height: 24px;
+    line-height: 18px;
     font-size: 14px;
     transition: color 0.2s ease-in-out;
     -moz-transition: color 0.2s ease-in-out;
@@ -306,7 +306,7 @@ table.lt-http-req-table, table.lt-http-req-table tr td {
 
 table.lt-http-req-table tbody {
     display: block;
-    height: calc(100% - 150px);
+    height: calc(100% - 24px);
     overflow: auto;
     overflow-y: scroll;
 
@@ -480,4 +480,33 @@ table.lt-http-req-table th:nth-child(10) {
 
 .horizontal .progress-fill.slower {
     background: #c72808;
+}
+
+/* Request Rate Chart */
+
+.lt-request-chart-cnt {
+    height: 100px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.lt-request-chart {
+}
+
+.lt-request-chart rect {
+    fill: #71bf41;
+    stroke: white;
+}
+
+.lt-request-rate {
+    align-self: flex-end;
+    margin-right: 20px;
+    margin-top: 2px;
+    font-size: 14px;
+    font-family: "Roboto", sans-serif;
+    font-weight: normal;
+    color: #999;
 }

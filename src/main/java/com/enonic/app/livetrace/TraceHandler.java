@@ -17,28 +17,39 @@ public final class TraceHandler
 {
     private final static Logger LOG = LoggerFactory.getLogger( TraceHandler.class );
 
+    private static final String LIVE_TRACE_APP_PREFIX = "com.enonic.app.livetrace:";
+
     private final ConcurrentMap<String, TraceCollector> collectors;
+
+    private final RequestRate requestRate;
 
     public TraceHandler()
     {
         collectors = new ConcurrentHashMap<>();
+        requestRate = new RequestRate();
     }
 
     @Override
     public void onTrace( final TraceEvent event )
     {
         final Trace trace = event.getTrace();
-        if ( event.getType() != TraceEvent.Type.END )
+        final TraceEvent.Type eventType = event.getType();
+        if ( eventType != TraceEvent.Type.END )
         {
             return;
         }
-        if ( "com.enonic.app.livetrace:/services/sampling/sampling.js".equals( trace.get( "script" ) ) )
+        final String sourceScript = (String) trace.get( "script" );
+        if ( sourceScript != null && sourceScript.startsWith( LIVE_TRACE_APP_PREFIX ) )
         {
             return;
         }
         System.out.println( trace.getName() + " -> " + trace.get( "method" ) + " " + trace.get( "path" ) + " (" +
                                 trace.getDuration().toString().substring( 2 ).toLowerCase() + ")" );
 
+        if ( "portalRequest".equals( trace.getName() ) )
+        {
+            requestRate.addRequest( trace.getEndTime() );
+        }
         process( trace );
     }
 
@@ -58,5 +69,10 @@ public final class TraceHandler
     public TraceCollector unregister( final String collectorId )
     {
         return collectors.remove( collectorId );
+    }
+
+    public int getRequestsPerSecond()
+    {
+        return requestRate.requestsPerSecond();
     }
 }

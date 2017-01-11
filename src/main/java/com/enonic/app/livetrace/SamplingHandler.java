@@ -25,6 +25,12 @@ public class SamplingHandler
         return new TracesMapper( collector.getTraces() );
     }
 
+    public int getRequestsPerSecond()
+    {
+        final TraceHandler traceHandler = traceHandlerSupplier.get();
+        return traceHandler.getRequestsPerSecond();
+    }
+
     @Override
     public void initialize( final BeanContext context )
     {
