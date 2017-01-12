@@ -451,6 +451,10 @@ table.lt-http-req-table tbody tr.lt-http-sel {
     background-color: #f3f3ff;
 }
 
+table.lt-http-req-table tbody tr.lt-http-sel:hover {
+    background-color: #f3f3ff;
+}
+
 /* duration bar */
 .horizontal .progress-track {
     position: relative;

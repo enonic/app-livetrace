@@ -174,19 +174,19 @@
     var httpFilters = {
         'all': null,
         'page': function (t) {
-            return t.data.type.indexOf('text/html') > -1;
+            return t.data.type && t.data.type.indexOf('text/html') > -1 && !(t.data.path && t.data.path.indexOf('/_/') > -1);
         },
         'component': function (t) {
-            return t.data.path.indexOf('/_/component/') > -1;
+            return t.data.path && t.data.path.indexOf('/_/component/') > -1;
         },
         'service': function (t) {
-            return t.data.path.indexOf('/_/service/') > -1;
+            return t.data.path && t.data.path.indexOf('/_/service/') > -1;
         },
         'asset': function (t) {
-            return t.data.path.indexOf('/_/asset/') > -1;
+            return t.data.path && t.data.path.indexOf('/_/asset/') > -1;
         },
         'image': function (t) {
-            return t.data.path.indexOf('/_/image/') > -1;
+            return t.data.path && t.data.path.indexOf('/_/image/') > -1;
         },
         'other': function (t) {
             return !httpFilters.page(t) && !httpFilters.component(t) && !httpFilters.service(t) && !httpFilters.asset(t) &&
@@ -425,7 +425,7 @@
 
     var handleNewRequestRate = function (reqPerSec) {
         $('.lt-request-rate span').text(Math.ceil(reqPerSec));
-        console.log('REQ: ' + reqPerSec);
+        // console.log('REQ: ' + reqPerSec);
         var reqPoint = {
             time: new Date().getTime(),
             value: scaleValue(reqPerSec),
@@ -436,7 +436,7 @@
 
         if (reqPerSec > requestRate.yScale) {
             requestRate.yScale = Math.ceil(reqPerSec * 1.2);
-            console.log('New Req max: ' + requestRate.yScale);
+            // console.log('New Req max: ' + requestRate.yScale);
             rescaleBars();
         } else {
             checkDownScale();
@@ -460,7 +460,7 @@
             max = Math.max(Math.ceil(max * 1.2), 10);
             if (max < requestRate.yScale) {
                 requestRate.yScale = max;
-                console.log('New Req max: ' + requestRate.yScale);
+                // console.log('New Req max: ' + requestRate.yScale);
                 rescaleBars();
             }
 
