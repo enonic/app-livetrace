@@ -311,6 +311,7 @@ table.lt-http-req-table tbody {
     overflow-y: scroll;
 
     border-bottom: 1px solid #dadfe0;
+    border-top: 1px solid #dadfe0;
 }
 
 table.lt-http-req-table thead, table.lt-http-req-table tbody tr {
@@ -341,10 +342,6 @@ table.lt-http-req-table tbody tr.lt-even:hover {
 
 table.lt-http-req-table tbody tr.lt-odd {
     background-color: #ecf2f9;
-}
-
-table.lt-http-req-table thead th {
-    border-bottom: 1px solid #dadfe0;
 }
 
 tr.lt-sub-header {
