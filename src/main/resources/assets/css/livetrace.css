@@ -428,23 +428,24 @@ table.lt-http-req-table td:nth-child(6) {
 }
 
 table.lt-http-req-table th:nth-child(7) {
-    text-align: left;
+    text-align: right;
     border-left: 1px solid #dadfe0;
 }
 
 table.lt-http-req-table th:nth-child(8) {
-    text-align: left;
+    text-align: right;
     border-left: 1px solid #dadfe0;
 }
 
 table.lt-http-req-table th:nth-child(9) {
-    text-align: left;
+    text-align: right;
     border-left: 1px solid #dadfe0;
 }
 
 table.lt-http-req-table th:nth-child(10) {
-    text-align: left;
+    text-align: right;
     border-left: 1px solid #dadfe0;
+    border-right: 1px solid #dadfe0;
 }
 
 table.lt-http-req-table tbody tr.lt-http-sel {

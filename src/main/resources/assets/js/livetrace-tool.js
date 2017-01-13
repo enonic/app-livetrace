@@ -5,6 +5,7 @@
     var sampling = {
         traces: [],
         maxDuration: 500,
+        httpFilterMaxDuration: null,
         httpFilterType: '',
         httpFilterUrl: ''
     };
@@ -18,7 +19,7 @@
         chart: null,
         rescaleCheck: 0
     };
-    var BAR_COUNT = 20;
+    var REQ_RATE_BAR_COUNT = 20;
 
     $(function () {
         $('#startSampling').on('click', startSampling);
@@ -151,6 +152,7 @@
 
             sampling.traces = resp.traces;
             sampling.maxDuration = resp.maxDuration;
+            sampling.httpFilterMaxDuration = null;
             displayTraceTable();
         }).fail(function (jqXHR, textStatus) {
 
@@ -195,24 +197,31 @@
     };
 
     var filterTraces = function (traces) {
+        sampling.httpFilterMaxDuration = null;
         var f = httpFilters[sampling.httpFilterType];
-        if (!f && sampling.httpFilterUrl === '') {
+        var filterSet = !!f, searchSet = sampling.httpFilterUrl !== '';
+        if (!filterSet && !searchSet) {
             return traces;
         }
-        if (f) {
-            traces = traces.filter(f);
-        }
-        if (sampling.httpFilterUrl !== '') {
-            traces = traces.filter(function (t) {
-                return t.data.path.indexOf(sampling.httpFilterUrl) > -1;
-            });
-        }
+
+        var maxDuration = 0;
+
+        traces = traces.filter(function (t) {
+            var r = (!filterSet || f(t)) && (!searchSet || (t.data.path.indexOf(sampling.httpFilterUrl) > -1));
+            if (r && t.duration > maxDuration) {
+                maxDuration = t.duration;
+            }
+            return r;
+        });
+
+        sampling.httpFilterMaxDuration = maxDuration;
+
         return traces;
     };
 
     var displayTraceTable = function () {
         var traces = filterTraces(sampling.traces);
-        var maxDuration = sampling.maxDuration;
+        var maxDuration = sampling.httpFilterMaxDuration || sampling.maxDuration;
         var i, l = traces.length, trace, row, rows = [];
         if (maxDuration <= 500) {
             maxDuration = 500;
@@ -264,10 +273,13 @@
     };
 
     var setDurationScale = function (d) {
-        $('#timecol1').text('0 ms');
-        $('#timecol2').text(((d / 4)) + ' ms');
-        $('#timecol3').text(((d / 4) * 2) + ' ms');
-        $('#timecol4').text(((d / 4) * 3) + ' ms');
+        var f = function (v) {
+            return (v % 1000) === 0 ? (v / 1000) + ' s' : v + ' ms';
+        };
+        $('#timecol1').text(f(d / 4));
+        $('#timecol2').text(f((d / 4) * 2));
+        $('#timecol3').text(f((d / 4) * 3));
+        $('#timecol4').text(f(d));
     };
 
     var traceSpeed = function (duration) {
@@ -293,8 +305,8 @@
     };
 
     var rowClick = function (e) {
-        var currentSelected = $(this).next('tr').hasClass('lt-http-req-remove');
-        $('.lt-http-req-remove').remove();
+        var currentSelected = $(this).next('tr').hasClass('lt-http-req-details');
+        $('.lt-http-req-details').remove();
         $('.lt-http-sel').removeClass('lt-http-sel');
 
         if (currentSelected) {
@@ -311,7 +323,7 @@
         var parentStart = $(this).data('s');
 
         var head = $(
-            '<tr class="lt-http-req-remove lt-http-sel lt-sub-header"><td>Trace</td><td></td><td>Script / Class</td><td>Application</td><td></td><td></td><td class="lt-http-req-sub-time" colspan="4">Execution time</tr>')
+            '<tr class="lt-http-req-details lt-http-sel lt-sub-header"><td>Trace</td><td></td><td>Script / Class</td><td>Application</td><td></td><td></td><td class="lt-http-req-sub-time" colspan="4">Execution time</tr>')
             .addClass(oddEven);
 
         var i, l, traces = [], bodyTr, bodyTrs = [head];
@@ -348,7 +360,7 @@
             }
         }
 
-        var tr = $('<tr class="lt-http-req-remove">');
+        var tr = $('<tr class="lt-http-req-details">');
         var traceText = '';
         if (trace.name === 'renderComponent') {
             traceText = capitalize(traceData.type);
@@ -380,12 +392,12 @@
     // Request Rate
     var initRequestRateData = function () {
         var elW = $('.lt-request-chart-cnt').width();
-        var w = Math.floor(elW / BAR_COUNT), h = 60;
+        var w = Math.floor(elW / REQ_RATE_BAR_COUNT), h = 60;
 
         var t = new Date().getTime();
         if (!requestRate.data) {
             requestRate.data = [];
-            for (var i = 0; i < BAR_COUNT; i++) {
+            for (var i = 0; i < REQ_RATE_BAR_COUNT; i++) {
                 requestRate.data.push({
                     time: t,
                     value: 0,

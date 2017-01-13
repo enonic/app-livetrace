@@ -43,8 +43,8 @@ public final class TraceHandler
         {
             return;
         }
-        System.out.println( trace.getName() + " -> " + trace.get( "method" ) + " " + trace.get( "path" ) + " (" +
-                                trace.getDuration().toString().substring( 2 ).toLowerCase() + ")" );
+//        System.out.println( trace.getName() + " -> " + trace.get( "method" ) + " " + trace.get( "path" ) + " (" +
+//                                trace.getDuration().toString().substring( 2 ).toLowerCase() + ")" );
 
         if ( "portalRequest".equals( trace.getName() ) )
         {
