@@ -53,9 +53,17 @@
         setInterval(redrawRequestRate, 1000);
         window.addEventListener('resize', function (e) {
             initRequestRateData();
+            // setTableHeight();
         });
+        // setTableHeight();
     });
 
+    var setTableHeight = function () {
+        var h = $('.lt-http-requests').height();
+        console.log('--> ' + h);
+        $('.lt-http-req-table').css('height', h + 'px');
+        $('.lt-http-req-table tbody').css('height', (h - 24) + 'px');
+    };
 
     // WS - EVENTS
 
@@ -425,8 +433,21 @@
             .attr("y1", h - .5)
             .attr("y2", h - .5)
             .attr("stroke", "#000");
+        chart.append("svg:line")
+            .attr("x1", 0)
+            .attr("x2", 0)
+            .attr("y1", 0)
+            .attr("y2", h - .5)
+            .attr("stroke", "#000");
+        chart.append("svg:line")
+            .attr("x1", 0)
+            .attr("x2", 10)
+            .attr("y1", 0)
+            .attr("y2", 0)
+            .attr("stroke", "#000");
 
         chart.selectAll('rect').attr('width', w);
+        $('.lt-request-rate-max').text(requestRate.yScale + ' r/s');
 
         requestRate.x = x;
         requestRate.y = y;
@@ -436,7 +457,8 @@
     };
 
     var handleNewRequestRate = function (reqPerSec) {
-        $('.lt-request-rate span').text(Math.ceil(reqPerSec));
+        reqPerSec = Math.ceil(reqPerSec);
+        $('.lt-request-rate-current span').text(reqPerSec);
         // console.log('REQ: ' + reqPerSec);
         var reqPoint = {
             time: new Date().getTime(),
@@ -447,8 +469,9 @@
         requestRate.data.push(reqPoint);
 
         if (reqPerSec > requestRate.yScale) {
-            requestRate.yScale = Math.ceil(reqPerSec * 1.2);
-            // console.log('New Req max: ' + requestRate.yScale);
+            requestRate.yScale = reqPerSec + (10 - reqPerSec % 10);
+            $('.lt-request-rate-max').text(requestRate.yScale + ' r/s');
+            console.log('New Req max: ' + requestRate.yScale);
             rescaleBars();
         } else {
             checkDownScale();
@@ -469,10 +492,11 @@
                     max = requestRate.data[i].source;
                 }
             }
-            max = Math.max(Math.ceil(max * 1.2), 10);
+            max = max + (10 - max % 10);
             if (max < requestRate.yScale) {
                 requestRate.yScale = max;
-                // console.log('New Req max: ' + requestRate.yScale);
+                $('.lt-request-rate-max').text(requestRate.yScale + ' r/s');
+                console.log('New Req max: ' + requestRate.yScale);
                 rescaleBars();
             }
 
