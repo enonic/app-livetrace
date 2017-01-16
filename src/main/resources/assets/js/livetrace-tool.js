@@ -20,6 +20,7 @@
         rescaleCheck: 0
     };
     var REQ_RATE_BAR_COUNT = 20;
+    var redrawTimer;
 
     $(function () {
         $('#startSampling').on('click', startSampling);
@@ -50,19 +51,19 @@
         initRequestRateData();
         wsConnect();
 
-        setInterval(redrawRequestRate, 1000);
+        redrawRequestRateTask();
         window.addEventListener('resize', function (e) {
             initRequestRateData();
-            // setTableHeight();
+            displayTraceTable();
         });
-        // setTableHeight();
     });
 
-    var setTableHeight = function () {
-        var h = $('.lt-http-requests').height();
-        console.log('--> ' + h);
-        $('.lt-http-req-table').css('height', h + 'px');
-        $('.lt-http-req-table tbody').css('height', (h - 24) + 'px');
+    var redrawRequestRateTask = function () {
+        clearTimeout(redrawTimer);
+        redrawTimer = setTimeout(function () {
+            redrawRequestRate();
+            redrawRequestRateTask();
+        }, 1000);
     };
 
     // WS - EVENTS
@@ -246,7 +247,13 @@
         }
 
         $('.lt-http-req-table tbody tr').remove();
+        setTableHeight();
         $('.lt-http-req-table tbody').append(rows);
+    };
+
+    var setTableHeight = function () {
+        var h = $('.lt-http-requests').height();
+        $('.lt-http-req-table tbody').css('max-height', (h - 24) + 'px');
     };
 
     var traceToRow = function (trace, maxDuration) {
@@ -373,6 +380,10 @@
         if (trace.name === 'renderComponent') {
             traceText = capitalize(traceData.type);
             script = traceData.path;
+        } else if (trace.name === 'renderFilter') {
+            traceText = capitalize(traceData.type);
+            app = traceData.app;
+            script = traceData.name;
         } else if (trace.name === 'controllerScript') {
             traceText = 'Script';
         }
