@@ -12,3 +12,8 @@ exports.getRequestsPerSecond = function () {
     var bean = __.newBean('com.enonic.app.livetrace.SamplingHandler');
     return __.toNativeObject(bean.getRequestsPerSecond());
 };
+
+exports.isEnabled = function () {
+    var bean = __.newBean('com.enonic.app.livetrace.SamplingHandler');
+    return __.toNativeObject(bean.isEnabled());
+};

@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
+import com.enonic.xp.trace.Tracer;
 
 public class SamplingHandler
     implements ScriptBean
@@ -29,6 +30,11 @@ public class SamplingHandler
     {
         final TraceHandler traceHandler = traceHandlerSupplier.get();
         return traceHandler.getRequestsPerSecond();
+    }
+
+    public boolean isEnabled()
+    {
+        return Tracer.isEnabled();
     }
 
     @Override

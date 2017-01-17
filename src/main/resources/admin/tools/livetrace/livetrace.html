@@ -13,7 +13,10 @@
         <span>Live Trace</span>
     </button>
     <div class="lt-appbarmiddle">
-        <button id="startSampling" class="lt-sampling-button lt-button">
+        <button id="checkSamplingDisabled" class="lt-sampling-disabled-button lt-button" {{#enabled}} style="display: none;" {{/enabled}}>
+            <span>Server Trace Disabled</span>
+        </button>
+        <button id="startSampling" class="lt-sampling-button lt-button"{{#disabled}} style="display: none;" {{/disabled}}>
             <span>Start Sampling Data</span>
         </button>
         <button id="stopSampling" class="lt-sampling-stop-button lt-button" style="display: none;">
@@ -46,11 +49,17 @@
     </div>
 
     <div class="lt-http-panel">
+        <div class="lt-http-trace-disabled-message" style="display: none;">
+            <h2>Live Tracing Disabled</h2>
+            <h3>Tracing is disabled in the configuration for this server.</h3>
+            <h4>To enable tracing edit: <span>config/com.enonic.xp.server.trace.cfg</span></h4>
+            <h4>And set the property: <span>enabled = true</span></h4>
+        </div>
         <div class="lt-http-sampling-message" style="display: none;">
             <h2>Sampling data</h2>
             <h3 id="samplingSeconds"></h3>
         </div>
-        <div class="lt-http-requests">
+        <div class="lt-http-requests" style="display: none;">
             <table class="lt-http-req-table">
                 <thead>
                 <tr>

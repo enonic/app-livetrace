@@ -3,6 +3,7 @@
     var ws, connected, keepAliveIntervalId;
     var samplingId, samplingIntervalId;
     var sampling = {
+        enabled: false,
         traces: [],
         maxDuration: 500,
         httpFilterMaxDuration: null,
@@ -23,8 +24,12 @@
     var redrawTimer;
 
     $(function () {
+        sampling.enabled = !$('#checkSamplingDisabled').is(':visible');
+        $('.lt-http-trace-disabled-message').toggle(!sampling.enabled);
+        $('.lt-http-requests').toggle(sampling.enabled);
         $('#startSampling').on('click', startSampling);
         $('#stopSampling').on('click', stopSampling);
+        $('#checkSamplingDisabled').on('click', checkTracingEnabled);
 
         $('#httpTraceAll').on('click', {t: 'all'}, httpApplyFilter);
         $('#httpTracePage').on('click', {t: 'page'}, httpApplyFilter);
@@ -103,6 +108,29 @@
     };
 
     // HTTP
+    var checkTracingEnabled = function () {
+        $(this).blur();
+        $('.lt-http-trace-disabled-message').removeClass('shake');
+        $.ajax({
+            url: svcUrl + 'status',
+            method: "GET"
+        }).done(function (resp) {
+            sampling.enabled = resp.enabled;
+            $('.lt-http-trace-disabled-message').toggle(!sampling.enabled);
+            $('.lt-http-requests').toggle(sampling.enabled);
+            $('#startSampling').toggle(sampling.enabled);
+            $('#stopSampling').hide();
+            $('#checkSamplingDisabled').toggle(!sampling.enabled);
+
+            if (!sampling.enabled) {
+                $('.lt-http-trace-disabled-message').toggleClass('shake');
+            }
+
+        }).fail(function (jqXHR, textStatus) {
+
+        });
+    };
+
     var startSampling = function () {
         console.log('Start sampling...');
         $('#startSampling').hide();
@@ -338,7 +366,15 @@
         var parentStart = $(this).data('s');
 
         var head = $(
-            '<tr class="lt-http-req-details lt-http-sel lt-sub-header"><td>Trace</td><td></td><td>Script / Class</td><td>Application</td><td></td><td></td><td class="lt-http-req-sub-time" colspan="4">Execution time</tr>')
+            '<tr class="lt-http-req-details lt-http-sel lt-sub-header">' +
+            '<td>Trace</td>' +
+            '<td></td>' +
+            '<td>Script / Class</td>' +
+            '<td>Application</td>' +
+            '<td></td>' +
+            '<td></td>' +
+            '<td class="lt-http-req-sub-time" colspan="4">Execution time</td>' +
+            '</tr>')
             .addClass(oddEven);
 
         var i, l, traces = [], bodyTr, bodyTrs = [head];
