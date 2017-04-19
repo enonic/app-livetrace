@@ -1,9 +1,12 @@
 package com.enonic.app.livetrace;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
+import com.enonic.xp.script.serializer.MapGenerator;
+import com.enonic.xp.script.serializer.MapSerializable;
 import com.enonic.xp.trace.Tracer;
 
 public class SamplingHandler
@@ -32,6 +35,13 @@ public class SamplingHandler
         return traceHandler.getRequestsPerSecond();
     }
 
+    public MapSerializable getSamplingRequestCount()
+    {
+        final TraceHandler traceHandler = traceHandlerSupplier.get();
+        final Map<String, Integer> values = traceHandler.getSamplingRequestCount();
+        return ( MapGenerator mapGenerator ) -> values.forEach( mapGenerator::value );
+    }
+
     public boolean isEnabled()
     {
         return Tracer.isEnabled();
@@ -42,5 +52,4 @@ public class SamplingHandler
     {
         traceHandlerSupplier = context.getService( TraceHandler.class );
     }
-
 }

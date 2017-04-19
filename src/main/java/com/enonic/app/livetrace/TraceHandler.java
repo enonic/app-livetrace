@@ -1,5 +1,7 @@
 package com.enonic.app.livetrace;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -74,5 +76,18 @@ public final class TraceHandler
     public int getRequestsPerSecond()
     {
         return requestRate.requestsPerSecond();
+    }
+
+    public Map<String, Integer> getSamplingRequestCount()
+    {
+        final Map<String, Integer> samplingCount = new HashMap<>();
+        collectors.forEach( ( id, collector ) ->
+                            {
+                                if ( collector != null )
+                                {
+                                    samplingCount.put( id, collector.size() );
+                                }
+                            } );
+        return samplingCount;
     }
 }

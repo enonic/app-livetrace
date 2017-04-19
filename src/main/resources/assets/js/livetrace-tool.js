@@ -1,7 +1,7 @@
 (function ($, svcUrl) {
     "use strict";
     var ws, connected, keepAliveIntervalId;
-    var samplingId, samplingIntervalId;
+    var samplingId, samplingIntervalId, samplingCount;
     var sampling = {
         enabled: false,
         traces: [],
@@ -98,8 +98,13 @@
     };
 
     var onWsMessage = function (event) {
-        var reqSec = Number(event.data);
-        handleNewRequestRate(reqSec);
+        var msg = JSON.parse(event.data);
+        if (msg.reqSec != null) {
+            var reqSec = Number(msg.reqSec);
+            handleNewRequestRate(reqSec);
+        } else if (msg.samplingCount) {
+            samplingCount = msg.samplingCount[samplingId];
+        }
     };
 
     var getWebSocketUrl = function (path) {
@@ -145,9 +150,14 @@
         samplingIntervalId = setInterval(function () {
             var dif = new Date().getTime() - samplingStart.getTime();
             var seconds = Math.floor(Math.abs(dif / 1000));
-            $('#samplingSeconds').text('(' + seconds + (seconds > 1 ? ' seconds' : ' second') + ')');
+            var samplingText = '(' + quantityWord(seconds, '...', '1 second', seconds + ' seconds') +
+                               ' — ' +
+                               quantityWord(samplingCount, 'No requests yet', '1 request captured', samplingCount + ' requests captured') +
+                               ')';
+            $('#samplingSeconds').text(samplingText);
         }, 1000);
 
+        samplingCount = 0;
         $.ajax({
             url: svcUrl + 'sampling',
             method: "POST",
@@ -267,6 +277,11 @@
         }
         setDurationScale(maxDuration);
 
+        Opentip.styles.tag = {
+            showOn: 'mouseover',
+            delay: 0.8
+        };
+
         $('.lt-request-label').text(l + ' Requests');
         for (i = 0; i < l; i++) {
             trace = traces[i];
@@ -289,7 +304,11 @@
         var traceData = trace.data || {};
         var tdStatus = $('<td>').text(traceData.status);
         var tdMethod = $('<td>').text(traceData.method || '');
-        var tdPath = $('<td>').text(traceData.path || '').attr('title', traceData.path);
+        var tdPath = $('<td>').text(traceData.path || '');
+        if (traceData.path && traceData.path.length > 40) {
+            var tooltip = splitLine(traceData.path, 55);
+            new Opentip(tdPath.get(0), tooltip, {style: "tag"});
+        }
         var tdType = $('<td>').text(traceData.type || '');
         var tdSize = $('<td>').text(formatSize(traceData.size));
         var tdDuration = $('<td>').text(trace.duration + ' ms');
@@ -415,7 +434,7 @@
         var traceText = '';
         if (trace.name === 'renderComponent') {
             traceText = capitalize(traceData.type);
-            script = traceData.path;
+            script = traceData.contentPath || traceData.componentPath;
         } else if (trace.name === 'renderFilter') {
             traceText = capitalize(traceData.type);
             app = traceData.app;
@@ -425,7 +444,12 @@
         }
         var tdTrace = $('<td>').text(traceText);
         var tdMethod = $('<td>');
-        var tdScriptClass = $('<td>').text(script).attr('title', script).css('padding-left', trace.l * 8 + 'px');
+        var tdScriptClass = $('<td>').text(script).css('padding-left', trace.l * 8 + 'px');
+        if (script && script.length > 40) {
+            var tooltip = splitLine(script, 55);
+            new Opentip(tdScriptClass.get(0), tooltip, {style: "tag"});
+        }
+
         var tdApp = $('<td>').text(app || '');
         var tdSize = $('<td>');
         var tdDuration = $('<td>').text(trace.duration + ' ms');
@@ -611,5 +635,23 @@
             })
             .remove();
     };
+
+    var splitLine = function (text, maxLength) {
+        if (text == null) {
+            return '';
+        }
+        if (text.length <= maxLength) {
+            return text;
+        }
+        var p = text.lastIndexOf('/', maxLength);
+        if (p <= 0 || p > maxLength) {
+            p = maxLength;
+        }
+        return text.slice(0, p) + "\r\n" + splitLine(text.slice(p), maxLength);
+    };
+
+    var quantityWord = function (value, zero, one, more) {
+        return value === 0 ? zero : value === 1 ? one : more;
+    }
 
 }($, SVC_URL));

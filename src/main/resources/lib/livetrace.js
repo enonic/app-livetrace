@@ -17,3 +17,8 @@ exports.isEnabled = function () {
     var bean = __.newBean('com.enonic.app.livetrace.SamplingHandler');
     return __.toNativeObject(bean.isEnabled());
 };
+
+exports.getRequestsCount = function () {
+    var bean = __.newBean('com.enonic.app.livetrace.SamplingHandler');
+    return __.toNativeObject(bean.getSamplingRequestCount());
+};

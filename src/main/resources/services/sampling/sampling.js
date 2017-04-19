@@ -63,7 +63,17 @@ var handleGet = function (req) {
 
 var broadcastRequestRate = function () {
     var reqSec = traceLib.getRequestsPerSecond();
-    webSocketLib.sendToGroup(WS_GROUP_NAME, reqSec);
+    var msg = JSON.stringify({reqSec: reqSec});
+    webSocketLib.sendToGroup(WS_GROUP_NAME, msg);
+};
+
+var broadcastRequestsSampled = function () {
+    var samplingCount = traceLib.getRequestsCount();
+
+    if (Object.keys(samplingCount).length > 0) {
+        var msg = JSON.stringify({"samplingCount": samplingCount});
+        webSocketLib.sendToGroup(WS_GROUP_NAME, msg);
+    }
 };
 
 var setupRequestRateTask = function () {
@@ -88,6 +98,7 @@ var setupRequestRateTask = function () {
         task: function (id) {
             do {
                 broadcastRequestRate();
+                broadcastRequestsSampled();
                 taskLib.sleep(1000);
             } while (!shutdownRequest);
             log.info('Broadcasting request-rate task terminated');
