@@ -432,7 +432,7 @@ table.lt-http-req-table th:nth-child(2), table.lt-http-req-table td:nth-child(2)
 }
 
 table.lt-http-req-table th:nth-child(3), table.lt-http-req-table td:nth-child(3) {
-    width: 45%;
+    width: 42%;
 }
 
 table.lt-http-req-table th:nth-child(4), table.lt-http-req-table td:nth-child(4) {
@@ -444,7 +444,7 @@ table.lt-http-req-table th:nth-child(5), table.lt-http-req-table td:nth-child(5)
 }
 
 table.lt-http-req-table th:nth-child(6), table.lt-http-req-table td:nth-child(6) {
-    width: 5%;
+    width: 8%;
 }
 
 table.lt-http-req-table th:nth-child(7) {
@@ -609,4 +609,10 @@ table.lt-http-req-table tbody tr.lt-http-sel:hover {
     font-family: "Roboto", sans-serif;
     font-weight: normal;
     color: #999;
+}
+
+#timeToggle:hover {
+    cursor: pointer;
+    color: white;
+    background-color: #50a8f9;
 }

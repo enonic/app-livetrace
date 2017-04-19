@@ -22,6 +22,7 @@
     };
     var REQ_RATE_BAR_COUNT = 20;
     var redrawTimer;
+    var timeDurationMode = 'duration';
 
     $(function () {
         sampling.enabled = !$('#checkSamplingDisabled').is(':visible');
@@ -38,6 +39,7 @@
         $('#httpTraceAsset').on('click', {t: 'asset'}, httpApplyFilter);
         $('#httpTraceImage').on('click', {t: 'image'}, httpApplyFilter);
         $('#httpTraceOther').on('click', {t: 'other'}, httpApplyFilter);
+        $('#timeToggle').on('click', toggleTime);
 
         var typingTimer, doneTypingInterval = 800;
         var searchInput = $('#filterUrl');
@@ -220,6 +222,11 @@
         displayTraceTable();
     };
 
+    var toggleTime = function (e) {
+        timeDurationMode = timeDurationMode === 'duration' ? 'time' : 'duration';
+        displayTraceTable();
+    };
+
     var httpFilters = {
         'all': null,
         'page': function (t) {
@@ -311,7 +318,12 @@
         }
         var tdType = $('<td>').text(traceData.type || '');
         var tdSize = $('<td>').text(formatSize(traceData.size));
-        var tdDuration = $('<td>').text(trace.duration + ' ms');
+        var tdDuration = $('<td>');
+        if (timeDurationMode === 'duration') {
+            tdDuration.text(trace.duration + ' ms');
+        } else {
+            tdDuration.text(formatTimeWithMillis(new Date(trace.start)));
+        }
         var tdTimeBar = $('<td colspan="4">');
 
         var barWidth = Math.ceil((trace.duration / maxDuration) * 100);
@@ -434,7 +446,7 @@
         var traceText = '';
         if (trace.name === 'renderComponent') {
             traceText = capitalize(traceData.type);
-            script = traceData.contentPath || traceData.componentPath;
+            script = traceData.contentPath || traceData.componentPath;
         } else if (trace.name === 'renderFilter') {
             traceText = capitalize(traceData.type);
             app = traceData.app;
@@ -652,6 +664,16 @@
 
     var quantityWord = function (value, zero, one, more) {
         return value === 0 ? zero : value === 1 ? one : more;
+    };
+
+    var formatTimeWithMillis = function (t) {
+        return zeroPad(t.getHours(), 2) + ':' + zeroPad(t.getMinutes(), 2) + ':' + zeroPad(t.getSeconds(), 2) + '.' +
+               zeroPad(t.getMilliseconds(), 3);
+    };
+
+    function zeroPad(n, width) {
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
     }
 
 }($, SVC_URL));
