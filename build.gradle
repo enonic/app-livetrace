@@ -1,23 +1,12 @@
-buildscript {
-    repositories {
-        mavenLocal()
-        jcenter()
-        maven {
-            url 'http://repo.enonic.com/public'
-        }
-    }
-
-    dependencies {
-        classpath "com.enonic.xp:gradle-plugin:${xpVersion}"
-    }
+plugins {
+    id 'maven'
+    id 'com.enonic.defaults' version '1.0.3'
+    id 'com.enonic.xp.app' version '1.0.13'
 }
 
-apply plugin: 'maven-publish'
-apply plugin: 'com.enonic.xp.app'
-
 app {
-    name = project.appName
-    displayName = project.displayName
+    name = 'com.enonic.app.livetrace'
+    displayName = 'Live Trace'
     vendorName = 'Enonic AS'
     vendorUrl = 'http://enonic.com'
 }
@@ -29,31 +18,16 @@ dependencies {
     include "com.enonic.xp:lib-portal:${xpVersion}"
     include "com.enonic.xp:lib-thymeleaf:${xpVersion}"
     include "com.enonic.xp:lib-mustache:${xpVersion}"
-    include "com.enonic.xp:lib-http-client:${xpVersion}"
     include "com.enonic.xp:lib-io:${xpVersion}"
     include "com.enonic.xp:lib-auth:${xpVersion}"
     include "com.enonic.xp:lib-websocket:${xpVersion}"
     include "com.enonic.xp:lib-task:${xpVersion}"
+    include "com.enonic.lib:lib-http-client:1.0.0"
 }
 
 repositories {
     mavenLocal()
+    mavenCentral()
     jcenter()
-    maven {
-        url 'http://repo.enonic.com/public'
-    }
-}
-
-publishing {
-    publications {
-        mavenJava( MavenPublication ) {
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            url 'http://repo.enonic.net/artifactory/public'
-        }
-//        mavenLocal()
-    }
+    xp.enonicRepo()
 }
