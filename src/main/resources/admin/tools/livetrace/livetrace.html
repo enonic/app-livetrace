@@ -6,13 +6,15 @@
     <title>Live Trace</title>
     <link rel="stylesheet" type="text/css" href="{{assetsUri}}/css/livetrace.css">
     <link rel="stylesheet" type="text/css" href="{{assetsUri}}/css/opentip.css">
+    <link rel="stylesheet" type="text/css" href="{{assetsUri}}/admin/common/styles/_all.css">
     <link rel="shortcut icon" href="{{assetsUri}}/img/livetrace.png">
 </head>
 <body>
-<div class="appbar">
-    <button class="home-button">
-        <span>Live Trace</span>
-    </button>
+<div class="app-bar">
+    <div class="app-button">
+        <img class="app-icon" src="{{assetsUri}}/img/livetrace.svg"/>
+        <span class="app-title">Live Trace</span>
+    </div>
     <div class="lt-appbarmiddle">
         <button id="checkSamplingDisabled" class="lt-sampling-disabled-button lt-button" {{#enabled}} style="display: none;" {{/enabled}}>
             <span>Server Trace Disabled</span>
@@ -87,9 +89,11 @@
     </div>
 </div>
 
-<script type="text/javascript">var CONFIG = {portalAssetsUrl: '{{adminUiAssetsUrl}}', appId: 'livetrace'};
+<script type="text/javascript">var CONFIG = {adminUrl: '{{adminUrl}}', portalAssetsUrl: '{{adminUiAssetsUrl}}', appId: 'livetrace'};
 var SVC_URL = '{{svcUrl}}';</script>
-<!--<script type="text/javascript" src="{{launcherJsUrl}}"></script>-->
+<script type="text/javascript" src="{{assetsUri}}/admin/common/lib/_all.js"></script>
+<script type="text/javascript" src="{{assetsUri}}/admin/common/js/_all.js"></script>
+<script type="text/javascript" src="{{launcherUrl}}/bundle.js" async></script>
 <script type="text/javascript" src="{{assetsUri}}/js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/jquery.sparkline.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/opentip-jquery.min.js"></script>

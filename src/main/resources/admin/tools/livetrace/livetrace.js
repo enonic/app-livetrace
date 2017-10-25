@@ -1,6 +1,7 @@
 var mustache = require('/lib/xp/mustache');
 var portalLib = require('/lib/xp/portal');
 var traceLib = require('/lib/livetrace');
+var adminLib = require('/lib/xp/admin');
 
 exports.get = function (req) {
     var view = resolve('./livetrace.html');
@@ -10,6 +11,8 @@ exports.get = function (req) {
         adminUiAssetsUrl: portalLib.assetUrl({path: "", application: "com.enonic.xp.admin.ui"}),
         launcherJsUrl: portalLib.assetUrl({path: "/js/launcher.js", application: "com.enonic.xp.admin.ui"}),
         assetsUri: portalLib.assetUrl({path: ""}),
+        adminUrl : adminLib.getBaseUri(),
+        launcherUrl: portalLib.assetUrl({path: '/js/launcher', application: 'com.enonic.xp.app.main'}),
         svcUrl: svcUrl,
         disabled: !traceLib.isEnabled(),
         enabled: traceLib.isEnabled()
