@@ -1,5 +1,6 @@
 package com.enonic.app.livetrace;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -26,7 +27,7 @@ public class SamplingHandler
     {
         final TraceHandler traceHandler = traceHandlerSupplier.get();
         final TraceCollector collector = traceHandler.unregister( id );
-        return new TracesMapper( collector.getTraces() );
+        return new TracesMapper( collector == null ? Collections.emptyList() : collector.getTraces() );
     }
 
     public int getRequestsPerSecond()

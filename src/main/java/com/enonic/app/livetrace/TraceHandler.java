@@ -1,19 +1,28 @@
 package com.enonic.app.livetrace;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.primitives.Longs;
 
 import com.enonic.xp.trace.Trace;
 import com.enonic.xp.trace.TraceEvent;
 import com.enonic.xp.trace.TraceListener;
 
-@Component(immediate = true, service = {TraceListener.class, TraceHandler.class})
+@Component(immediate = true, service = {TraceListener.class, TraceHandler.class}, configurationPid = "com.enonic.app.livetrace")
 public final class TraceHandler
     implements TraceListener
 {
@@ -21,14 +30,40 @@ public final class TraceHandler
 
     private static final String LIVE_TRACE_APP_PREFIX = "com.enonic.app.livetrace:";
 
+    private static final Long DEFAULT_MAX_MINUTES = 10L;
+
     private final ConcurrentMap<String, TraceCollector> collectors;
 
     private final RequestRate requestRate;
+
+    private final ScheduledExecutorService scheduler;
+
+    private ScheduledFuture<?> autoStopFuture;
+
+    private Duration maxDuration = Duration.ofMinutes( DEFAULT_MAX_MINUTES );
 
     public TraceHandler()
     {
         collectors = new ConcurrentHashMap<>();
         requestRate = new RequestRate();
+        scheduler = Executors.newScheduledThreadPool( 1 );
+    }
+
+    @Activate
+    public void activate( final LiveTraceConfig config )
+    {
+        Long timeValue = Longs.tryParse( config.maxTracingTime() );
+        timeValue = ( timeValue == null || timeValue < 1 ) ? DEFAULT_MAX_MINUTES : timeValue;
+        maxDuration = Duration.ofMinutes( timeValue );
+        autoStopFuture = scheduler.scheduleAtFixedRate( this::autoStop, 0, 30, TimeUnit.SECONDS );
+        LOG.info( "Live Trace maximum tracing time is " + timeValue + " minutes." );
+    }
+
+    @Deactivate
+    public void deactivate()
+        throws Exception
+    {
+        autoStopFuture.cancel( true );
     }
 
     @Override
@@ -57,9 +92,39 @@ public final class TraceHandler
 
     private void process( final Trace trace )
     {
+        if ( collectors.isEmpty() )
+        {
+            return;
+        }
+
         for ( TraceCollector collector : collectors.values() )
         {
             collector.add( trace );
+        }
+    }
+
+    private void autoStop()
+    {
+        if ( collectors.isEmpty() )
+        {
+            return;
+        }
+
+        try
+        {
+            collectors.forEach( ( id, collector ) ->
+                                {
+                                    if ( collector.runningLongerThan( maxDuration ) )
+                                    {
+                                        LOG.info( "Stopping event tracing (Sampling ID: " + id + ") running for more than " +
+                                                      maxDuration.toMinutes() + " minutes." );
+                                        unregister( id );
+                                    }
+                                } );
+        }
+        catch ( Throwable t )
+        {
+            LOG.error( "Exception in event tracing autoStop ", t );
         }
     }
 
@@ -81,13 +146,7 @@ public final class TraceHandler
     public Map<String, Integer> getSamplingRequestCount()
     {
         final Map<String, Integer> samplingCount = new HashMap<>();
-        collectors.forEach( ( id, collector ) ->
-                            {
-                                if ( collector != null )
-                                {
-                                    samplingCount.put( id, collector.size() );
-                                }
-                            } );
+        collectors.forEach( ( id, collector ) -> samplingCount.put( id, collector.size() ) );
         return samplingCount;
     }
 }

@@ -1,5 +1,7 @@
 package com.enonic.app.livetrace;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -15,11 +17,14 @@ public final class TraceCollector
 
     private final AtomicInteger requestCount;
 
+    private final Instant started;
+
     public TraceCollector()
     {
         id = UUID.randomUUID().toString();
         traces = new ConcurrentLinkedQueue<>();
         requestCount = new AtomicInteger( 0 );
+        started = Instant.now();
     }
 
     public void add( final Trace trace )
@@ -44,5 +49,10 @@ public final class TraceCollector
     public int size()
     {
         return requestCount.get();
+    }
+
+    public boolean runningLongerThan( final Duration duration )
+    {
+        return started.plus( duration ).isBefore( Instant.now() );
     }
 }
