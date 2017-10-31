@@ -1,4 +1,3 @@
-var portal = require('/lib/xp/portal');
 var traceLib = require('/lib/livetrace');
 var webSocketLib = require('/lib/xp/websocket');
 var taskLib = require('/lib/xp/task');
@@ -8,56 +7,19 @@ var REQUEST_BROADCAST_TASK = 'task-livetrace-request-broadcast';
 
 var broadcastRequestTaskId;
 
-var handlePost = function (req) {
-    var action = req.params.action;
-
-    if (action === 'start') {
-        return startSampling(req);
-
-    } else if (action === 'stop') {
-        return stopSampling(req);
-    }
-
-    return {
-        status: 400
-    };
-};
-
-var startSampling = function (req) {
-    var samplingId = traceLib.startSampling();
-    log.info('Sampling ID: ' + samplingId);
-
-    return {
-        contentType: 'application/json',
-        body: {
-            id: samplingId
-        }
-    };
-};
-
-var stopSampling = function (req) {
-    var samplingId = req.params.id;
-    var traces = traceLib.stopSampling(samplingId);
-
-    return {
-        contentType: 'application/json',
-        body: traces
-    };
-};
-
 var handleGet = function (req) {
-    if (req.webSocket) {
-        setupRequestRateTask();
+    if (!req.webSocket) {
         return {
-            webSocket: {
-                data: {},
-                subProtocols: ["livetrace"]
-            }
+            status: 204
         };
     }
 
+    setupRequestRateTask();
     return {
-        status: 204
+        webSocket: {
+            data: {},
+            subProtocols: ["livetrace"]
+        }
     };
 };
 
@@ -131,5 +93,4 @@ var handleWebSocket = function (event) {
 };
 
 exports.get = handleGet;
-exports.post = handlePost;
 exports.webSocketEvent = handleWebSocket;

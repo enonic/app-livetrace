@@ -1,11 +1,11 @@
-exports.startSampling = function () {
+exports.startSampling = function (onSample) {
     var bean = __.newBean('com.enonic.app.livetrace.SamplingHandler');
-    return bean.startSampling();
+    return bean.startSampling(onSample);
 };
 
 exports.stopSampling = function (id) {
     var bean = __.newBean('com.enonic.app.livetrace.SamplingHandler');
-    return __.toNativeObject(bean.stopSampling(id));
+    bean.stopSampling(id);
 };
 
 exports.getRequestsPerSecond = function () {

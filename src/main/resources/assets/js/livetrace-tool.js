@@ -1,7 +1,93 @@
+class WebSocketConnection {
+    constructor(url) {
+        this.url = this._getWebSocketUrl(url);
+        this.webSocket = null;
+        this.connected = false;
+        this.keepAliveIntervalId = null;
+        this.onMessageCallback = null;
+        this.onConnectCallback = null;
+        this.onErrorCallback = null;
+    }
+
+    connect() {
+        const ws = new WebSocket(this.url, ['livetrace']);
+        this.webSocket = ws;
+        ws.onopen = this._onWsOpen.bind(this);
+        ws.onclose = this._onWsClose.bind(this);
+        ws.onmessage = this._onWsMessage.bind(this);
+        ws.onerror = this._onWsError.bind(this);
+    }
+
+    disconnect() {
+        this.connected = false;
+        clearInterval(this.keepAliveIntervalId);
+        this.webSocket && this.webSocket.close(1000);
+    }
+
+    send(msg) {
+        if (this.connected) {
+            this.webSocket.send(JSON.stringify(msg));
+        }
+    }
+
+    onConnect(callback) {
+        this.onConnectCallback = callback;
+    }
+
+    onMessage(callback) {
+        this.onMessageCallback = callback;
+    }
+
+    onError(callback) {
+        this.onErrorCallback = callback;
+    }
+
+    _onWsOpen() {
+        console.log('connect WS (' + this.url + ')');
+        this.keepAliveIntervalId = setInterval(function () {
+            if (this.connected) {
+                this.webSocket.send('{"action":"KeepAlive"}');
+            }
+        }, 30 * 1000);
+        this.connected = true;
+
+        if (this.onConnectCallback) {
+            this.onConnectCallback();
+        }
+    }
+
+    _onWsClose() {
+        clearInterval(this.keepAliveIntervalId);
+        if (!this.connected) {
+            return;
+        }
+        this.connected = false;
+        setTimeout(() => this.connect(), 5000); // attempt to reconnect
+    }
+
+    _onWsMessage(event) {
+        const msg = JSON.parse(event.data);
+        if (this.onMessageCallback) {
+            this.onMessageCallback(msg);
+        }
+    }
+
+    _onWsError(e) {
+        if (this.onErrorCallback) {
+            this.onErrorCallback(e);
+        }
+    }
+
+    _getWebSocketUrl(path) {
+        const l = window.location;
+        return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + path;
+    }
+}
+
 (function ($, svcUrl) {
     "use strict";
-    var ws, connected, keepAliveIntervalId;
-    var samplingId, samplingIntervalId, samplingCount;
+    var requestConn = null, samplingConn = null;
+    var samplingId, samplingIntervalId, samplingCount = 0;
     var sampling = {
         enabled: false,
         traces: [],
@@ -54,7 +140,9 @@
         });
 
         initRequestRateData();
-        wsConnect();
+        requestConn = new WebSocketConnection(svcUrl + 'sampling');
+        requestConn.onMessage(onRequestMessage);
+        requestConn.connect();
 
         redrawRequestRateTask();
         window.addEventListener('resize', function (e) {
@@ -71,45 +159,14 @@
         }, 1000);
     };
 
-    // WS - EVENTS
-
-    var wsConnect = function () {
-        ws = new WebSocket(getWebSocketUrl(svcUrl + 'sampling'), ['livetrace']);
-        ws.onopen = onWsOpen;
-        ws.onclose = onWsClose;
-        ws.onmessage = onWsMessage;
-    };
-
-    var onWsOpen = function () {
-        console.log('connect WS');
-        keepAliveIntervalId = setInterval(function () {
-            if (connected) {
-                ws.send('{"action":"KeepAlive"}');
-            }
-        }, 30 * 1000);
-        connected = true;
-    };
-
-    var onWsClose = function () {
-        clearInterval(keepAliveIntervalId);
-        connected = false;
-
-        setTimeout(wsConnect, 5000); // attempt to reconnect
-    };
-
-    var onWsMessage = function (event) {
-        var msg = JSON.parse(event.data);
+    var onRequestMessage = function (msg) {
         if (msg.reqSec != null) {
             var reqSec = Number(msg.reqSec);
             handleNewRequestRate(reqSec);
         } else if (msg.samplingCount) {
-            samplingCount = msg.samplingCount[samplingId];
+            var count = msg.samplingCount[samplingId];
+            samplingCount = count === undefined ? samplingCount : count;
         }
-    };
-
-    var getWebSocketUrl = function (path) {
-        var l = window.location;
-        return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + path;
     };
 
     // HTTP
@@ -138,6 +195,9 @@
 
     var startSampling = function () {
         console.log('Start sampling...');
+        sampling.traces = [];
+        sampling.maxDuration = 500;
+
         $('#startSampling').hide();
         $('#stopSampling').show();
         $('.lt-request-label').text('');
@@ -158,23 +218,36 @@
         }, 1000);
 
         samplingCount = 0;
-        $.ajax({
-            url: svcUrl + 'sampling',
-            method: "POST",
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-            data: {
-                action: 'start'
-            }
-        }).done(function (resp) {
-            samplingId = resp.id;
 
-        }).fail(function (jqXHR, textStatus) {
+        samplingConn = new WebSocketConnection(svcUrl + 'tracing');
+        samplingConn.onMessage(samplingTracesReceived);
+        samplingConn.onError(() => {
             clearInterval(samplingIntervalId);
             $('#stopSampling').hide();
             $('#startSampling').show();
             $('.lt-http-sampling-message').hide();
             $('.lt-http-requests').show();
         });
+        samplingId = undefined;
+        samplingConn.connect();
+    };
+
+    var samplingTracesReceived = function (msg) {
+        if (msg.samplingId) {
+            samplingId = msg.samplingId;
+            return
+        }
+
+        sampling.traces = sampling.traces.concat(msg.traces);
+        sampling.maxDuration = Math.max(sampling.maxDuration, msg.maxDuration);
+        sampling.httpFilterMaxDuration = null;
+
+        $('.lt-http-sampling-message').hide();
+        $('.lt-http-requests').show();
+        clearInterval(samplingIntervalId);
+        samplingIntervalId = null;
+
+        displayTraceTable();
     };
 
     var stopSampling = function () {
@@ -185,25 +258,8 @@
         $('.lt-http-requests').show();
         clearInterval(samplingIntervalId);
 
-        $.ajax({
-            url: svcUrl + 'sampling',
-            method: "POST",
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-            data: {
-                action: 'stop',
-                id: samplingId
-            }
-        }).done(function (resp) {
-            console.log(resp);
-            samplingId = undefined;
-
-            sampling.traces = resp.traces;
-            sampling.maxDuration = resp.maxDuration;
-            sampling.httpFilterMaxDuration = null;
-            displayTraceTable();
-        }).fail(function (jqXHR, textStatus) {
-
-        });
+        samplingConn.send({action: 'stop', samplingId: samplingId});
+        samplingConn.disconnect();
     };
 
     var httpApplyUrlFilter = function (e) {
@@ -332,9 +388,9 @@
     };
 
     var makeBar = function (widthPercent, offset, clz) {
-        var bar = $('<div class="progress-bar horizontal">');
-        var track = $('<div class="progress-track">');
-        var fill = $('<div class="progress-fill">').css('width', widthPercent + '%').addClass(clz);
+        var bar = $('<div class="lt-progress-bar horizontal">');
+        var track = $('<div class="lt-progress-track">');
+        var fill = $('<div class="lt-progress-fill">').css('width', widthPercent + '%').addClass(clz);
         if (offset) {
             fill.css('left', offset + '%');
         }

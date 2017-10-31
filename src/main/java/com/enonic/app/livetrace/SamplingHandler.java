@@ -1,7 +1,7 @@
 package com.enonic.app.livetrace;
 
-import java.util.Collections;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.enonic.xp.script.bean.BeanContext;
@@ -15,19 +15,23 @@ public class SamplingHandler
 {
     private Supplier<TraceHandler> traceHandlerSupplier;
 
-    public String startSampling()
+    public String startSampling( final Consumer<Object> onSample )
     {
         final TraceCollector collector = new TraceCollector();
+        collector.setOnTrace( onSample );
         final TraceHandler traceHandler = traceHandlerSupplier.get();
         traceHandler.register( collector );
         return collector.getId();
     }
 
-    public TracesMapper stopSampling( final String id )
+    public void stopSampling( final String id )
     {
         final TraceHandler traceHandler = traceHandlerSupplier.get();
         final TraceCollector collector = traceHandler.unregister( id );
-        return new TracesMapper( collector == null ? Collections.emptyList() : collector.getTraces() );
+        if ( collector != null )
+        {
+            collector.shutdown();
+        }
     }
 
     public int getRequestsPerSecond()
