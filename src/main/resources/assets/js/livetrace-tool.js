@@ -205,6 +205,7 @@ class WebSocketConnection {
         $('.lt-http-requests').hide();
         $('.lt-http-sampling-message').show();
         $('#samplingSeconds').text('...');
+        $('.lt-http-req-table tbody tr').remove();
 
         var samplingStart = new Date();
         samplingIntervalId = setInterval(function () {
