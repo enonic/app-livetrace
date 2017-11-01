@@ -64,6 +64,17 @@ public final class TraceHandler
         throws Exception
     {
         autoStopFuture.cancel( true );
+        for ( TraceCollector collector : collectors.values() )
+        {
+            try
+            {
+                collector.shutdown();
+            }
+            catch ( Throwable t )
+            {
+                // DO NOTHING
+            }
+        }
     }
 
     @Override
