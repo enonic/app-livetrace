@@ -146,7 +146,7 @@ class WebSocketConnection {
         requestConn = new WebSocketConnection(svcUrl + 'sampling');
         requestConn.onMessage(onRequestMessage);
         requestConn.onError(() => {
-            if (!$('.lt-http-trace-disabled-message').is(':visible')) {
+            if (sampling.enabled) {
                 $('.lt-http-trace-websocket-message').show().addClass('shake');
                 $('.lt-http-requests').hide();
                 $('#startSampling').hide();
@@ -155,12 +155,14 @@ class WebSocketConnection {
             }
         });
         requestConn.onConnect(() => {
-            $('.lt-http-trace-disabled-message').hide();
-            $('.lt-http-trace-websocket-message').hide();
-            $('.lt-http-requests').show();
-            $('#startSampling').show();
-            $('#stopSampling').hide();
-            $('#checkSamplingDisabled').hide();
+            if (sampling.enabled) {
+                $('.lt-http-trace-disabled-message').hide();
+                $('.lt-http-trace-websocket-message').hide();
+                $('.lt-http-requests').show();
+                $('#startSampling').show();
+                $('#stopSampling').hide();
+                $('#checkSamplingDisabled').hide();
+            }
         });
         requestConn.connect();
 
