@@ -265,6 +265,9 @@ class WebSocketConnection {
         if (msg.samplingId) {
             samplingId = msg.samplingId;
             return
+        } else if (msg.action === 'stop') {
+            stopSampling();
+            return;
         }
 
         sampling.traces = sampling.traces.concat(msg.traces);
@@ -526,7 +529,7 @@ class WebSocketConnection {
         }
 
         var tr = $('<tr class="lt-http-req-details">');
-        var traceText = '';
+        var traceText = '', traceSize;
         if (trace.name === 'renderComponent') {
             traceText = capitalize(traceData.type);
             script = traceData.contentPath || traceData.componentPath;
@@ -536,6 +539,11 @@ class WebSocketConnection {
             script = traceData.name;
         } else if (trace.name === 'controllerScript') {
             traceText = 'Script';
+        } else if (traceData.traceName) {
+            traceText = traceData.traceName;
+            script = traceData.url || traceData.path;
+            traceSize = formatSize(traceData.size);
+            app = traceData.type;
         }
         var tdTrace = $('<td>').text(traceText);
         var tdMethod = $('<td>');
@@ -546,7 +554,7 @@ class WebSocketConnection {
         }
 
         var tdApp = $('<td>').text(app || '');
-        var tdSize = $('<td>');
+        var tdSize = $('<td>').text(traceSize);
         var tdDuration = $('<td>').text(trace.duration + ' ms');
         var tdTimeBar = $('<td colspan="4">');
 

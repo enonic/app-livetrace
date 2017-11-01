@@ -24,8 +24,11 @@ var handleWebSocket = function (event) {
     case 'open':
         samplingId = traceLib.startSampling(function (value) {
             value = __.toNativeObject(value);
-            var msg = JSON.stringify(value);
-            webSocketLib.send(sessionId, msg);
+            if (value === 'stop') {
+                webSocketLib.send(sessionId, JSON.stringify({action: 'stop'}));
+            } else {
+                webSocketLib.send(sessionId, JSON.stringify(value));
+            }
         });
         log.info('Started sampling ID: ' + samplingId);
 

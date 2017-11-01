@@ -66,14 +66,7 @@ public final class TraceHandler
         autoStopFuture.cancel( true );
         for ( TraceCollector collector : collectors.values() )
         {
-            try
-            {
-                collector.shutdown();
-            }
-            catch ( Throwable t )
-            {
-                // DO NOTHING
-            }
+            collector.shutdown();
         }
     }
 
@@ -130,6 +123,7 @@ public final class TraceHandler
                                         LOG.info( "Stopping event tracing (Sampling ID: " + id + ") running for more than " +
                                                       maxDuration.toMinutes() + " minutes." );
                                         unregister( id );
+                                        collector.shutdown();
                                     }
                                 } );
         }

@@ -41,7 +41,18 @@ public final class TraceCollector
 
     public void shutdown()
     {
-        scheduler.shutdown();
+        try
+        {
+            scheduler.shutdown();
+        }
+        catch ( Exception e )
+        {
+            // DO NOTHING
+        }
+        if ( onTrace != null )
+        {
+            onTrace.accept( "stop" );
+        }
     }
 
     public void add( final Trace trace )
