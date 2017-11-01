@@ -52,11 +52,16 @@
     </div>
 
     <div class="lt-http-panel">
-        <div class="lt-http-trace-disabled-message" style="display: none;">
+        <div class="lt-http-trace-warning-message lt-http-trace-disabled-message" style="display: none;">
             <h2>Live Tracing Disabled</h2>
             <h3>Tracing is disabled in the configuration for this server.</h3>
             <h4>To enable tracing edit: <span>config/com.enonic.xp.server.trace.cfg</span></h4>
             <h4>And set the property: <span>enabled = true</span></h4>
+        </div>
+        <div class="lt-http-trace-warning-message lt-http-trace-websocket-message" style="display: none;">
+            <h2>WebSocket connection failed</h2>
+            <h3>Unable to connect to the server using WebSockets.</h3>
+            <h4>This might be caused by a front-end server not properly configured (e.g. Apache or Nginx).</h4>
         </div>
         <div class="lt-http-sampling-message" style="display: none;">
             <h2>Sampling data</h2>

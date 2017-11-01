@@ -290,7 +290,7 @@ body > .lt-main-container {
     margin-top: 0;
 }
 
-.lt-http-trace-disabled-message {
+.lt-http-trace-warning-message {
     display: flex;
     flex-direction: column;
 
@@ -301,24 +301,25 @@ body > .lt-main-container {
     padding-bottom: 200px;
 }
 
-.lt-http-trace-disabled-message h3 {
+.lt-http-trace-warning-message h2 {
+    font-weight: normal;
+    font-size: 1.8em;
+    color: #CD5C5C;
+}
+
+.lt-http-trace-warning-message h3 {
     font-weight: normal;
     font-size: 1.3em;
 }
 
-.lt-http-trace-disabled-message h2 {
-    font-weight: normal;
-    font-size: 1.8em;
-}
-
-.lt-http-trace-disabled-message h4 {
+.lt-http-trace-warning-message h4 {
     font-weight: normal;
     font-size: 1.2em;
     margin-top: 0;
     margin-bottom: 0;
 }
 
-.lt-http-trace-disabled-message h4 span {
+.lt-http-trace-warning-message h4 span {
     font-weight: normal;
     font-family: monospace;
 }

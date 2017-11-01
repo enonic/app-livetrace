@@ -4,12 +4,15 @@ class WebSocketConnection {
         this.webSocket = null;
         this.connected = false;
         this.keepAliveIntervalId = null;
+        this.reconnectTimeoutId = null;
         this.onMessageCallback = null;
         this.onConnectCallback = null;
         this.onErrorCallback = null;
     }
 
     connect() {
+        this.connected = false;
+        clearTimeout(this.reconnectTimeoutId);
         const ws = new WebSocket(this.url, ['livetrace']);
         this.webSocket = ws;
         ws.onopen = this._onWsOpen.bind(this);
@@ -62,7 +65,7 @@ class WebSocketConnection {
             return;
         }
         this.connected = false;
-        setTimeout(() => this.connect(), 5000); // attempt to reconnect
+        this.reconnectTimeoutId = setTimeout(() => this.connect(), 5000); // attempt to reconnect
     }
 
     _onWsMessage(event) {
@@ -142,6 +145,23 @@ class WebSocketConnection {
         initRequestRateData();
         requestConn = new WebSocketConnection(svcUrl + 'sampling');
         requestConn.onMessage(onRequestMessage);
+        requestConn.onError(() => {
+            if (!$('.lt-http-trace-disabled-message').is(':visible')) {
+                $('.lt-http-trace-websocket-message').show().addClass('shake');
+                $('.lt-http-requests').hide();
+                $('#startSampling').hide();
+                $('#stopSampling').hide();
+                $('#checkSamplingDisabled').show();
+            }
+        });
+        requestConn.onConnect(() => {
+            $('.lt-http-trace-disabled-message').hide();
+            $('.lt-http-trace-websocket-message').hide();
+            $('.lt-http-requests').show();
+            $('#startSampling').show();
+            $('#stopSampling').hide();
+            $('#checkSamplingDisabled').hide();
+        });
         requestConn.connect();
 
         redrawRequestRateTask();
@@ -172,7 +192,13 @@ class WebSocketConnection {
     // HTTP
     var checkTracingEnabled = function () {
         $(this).blur();
-        $('.lt-http-trace-disabled-message').removeClass('shake');
+        $('.lt-http-trace-disabled-message,.lt-http-trace-websocket-message').removeClass('shake');
+
+        if (!$('.lt-http-trace-disabled-message').is(':visible')) {
+            requestConn.connect();
+            return;
+        }
+
         $.ajax({
             url: svcUrl + 'status',
             method: "GET"
