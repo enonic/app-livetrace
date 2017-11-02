@@ -316,19 +316,19 @@ class WebSocketConnection {
     var httpFilters = {
         'all': null,
         'page': function (t) {
-            return t.data.type && t.data.type.indexOf('text/html') > -1 && !(t.data.path && t.data.path.indexOf('/_/') > -1);
+            return t.data.type && t.data.type.indexOf('text/html') > -1 && !(t.data.rawpath && t.data.rawpath.indexOf('/_/') > -1);
         },
         'component': function (t) {
-            return t.data.path && t.data.path.indexOf('/_/component/') > -1;
+            return t.data.rawpath && t.data.rawpath.indexOf('/_/component/') > -1;
         },
         'service': function (t) {
-            return t.data.path && t.data.path.indexOf('/_/service/') > -1;
+            return t.data.rawpath && t.data.rawpath.indexOf('/_/service/') > -1;
         },
         'asset': function (t) {
-            return t.data.path && t.data.path.indexOf('/_/asset/') > -1;
+            return t.data.rawpath && t.data.rawpath.indexOf('/_/asset/') > -1;
         },
         'image': function (t) {
-            return t.data.path && t.data.path.indexOf('/_/image/') > -1;
+            return t.data.rawpath && t.data.rawpath.indexOf('/_/image/') > -1;
         },
         'other': function (t) {
             return !httpFilters.page(t) && !httpFilters.component(t) && !httpFilters.service(t) && !httpFilters.asset(t) &&
@@ -539,6 +539,10 @@ class WebSocketConnection {
             script = traceData.name;
         } else if (trace.name === 'controllerScript') {
             traceText = 'Script';
+        } else if (trace.name === 'renderApp') {
+            traceText = 'App';
+            app = traceData.app;
+            script = traceData.script || traceData.path;
         } else if (traceData.traceName) {
             traceText = traceData.traceName;
             script = traceData.url || traceData.path;
