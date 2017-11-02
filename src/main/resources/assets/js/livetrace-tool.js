@@ -89,7 +89,7 @@ class WebSocketConnection {
 
 (function ($, svcUrl) {
     "use strict";
-    var requestConn = null, samplingConn = null;
+    var requestConn = null, samplingConn = null, wsAvailable = false;
     var samplingId, samplingIntervalId, samplingCount = 0;
     var sampling = {
         enabled: false,
@@ -147,14 +147,21 @@ class WebSocketConnection {
         requestConn.onMessage(onRequestMessage);
         requestConn.onError(() => {
             if (sampling.enabled) {
-                $('.lt-http-trace-websocket-message').show().addClass('shake');
-                $('.lt-http-requests').hide();
-                $('#startSampling').hide();
-                $('#stopSampling').hide();
-                $('#checkSamplingDisabled').show();
+                if (!wsAvailable) {
+                    $('.lt-http-trace-websocket-message').show().addClass('shake');
+                    $('.lt-http-requests').hide();
+                    $('#startSampling').hide();
+                    $('#stopSampling').hide();
+                    $('#checkSamplingDisabled').show();
+                } else {
+                    $('#startSampling').show();
+                    $('#stopSampling').hide();
+                    $('#checkSamplingDisabled').hide();
+                }
             }
         });
         requestConn.onConnect(() => {
+            wsAvailable = true;
             if (sampling.enabled) {
                 $('.lt-http-trace-disabled-message').hide();
                 $('.lt-http-trace-websocket-message').hide();
