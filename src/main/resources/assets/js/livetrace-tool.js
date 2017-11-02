@@ -316,19 +316,24 @@ class WebSocketConnection {
     var httpFilters = {
         'all': null,
         'page': function (t) {
-            return t.data.type && t.data.type.indexOf('text/html') > -1 && !(t.data.rawpath && t.data.rawpath.indexOf('/_/') > -1);
+            var p = t.data.rawpath || t.data.path;
+            return t.data.type && t.data.type.indexOf('text/html') > -1 && !(p && p.indexOf('/_/') > -1);
         },
         'component': function (t) {
-            return t.data.rawpath && t.data.rawpath.indexOf('/_/component/') > -1;
+            var p = t.data.rawpath || t.data.path;
+            return p && p.indexOf('/_/component/') > -1;
         },
         'service': function (t) {
-            return t.data.rawpath && t.data.rawpath.indexOf('/_/service/') > -1;
+            var p = t.data.rawpath || t.data.path;
+            return p && p.indexOf('/_/service/') > -1;
         },
         'asset': function (t) {
-            return t.data.rawpath && t.data.rawpath.indexOf('/_/asset/') > -1;
+            var p = t.data.rawpath || t.data.path;
+            return p && p.indexOf('/_/asset/') > -1;
         },
         'image': function (t) {
-            return t.data.rawpath && t.data.rawpath.indexOf('/_/image/') > -1;
+            var p = t.data.rawpath || t.data.path;
+            return p && p.indexOf('/_/image/') > -1;
         },
         'other': function (t) {
             return !httpFilters.page(t) && !httpFilters.component(t) && !httpFilters.service(t) && !httpFilters.asset(t) &&
