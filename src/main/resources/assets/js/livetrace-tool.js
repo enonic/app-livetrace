@@ -529,7 +529,7 @@ class WebSocketConnection {
         }
 
         var tr = $('<tr class="lt-http-req-details">');
-        var traceText = '', traceSize;
+        var traceText = '', traceSize = '', traceMethod = '';
         if (trace.name === 'renderComponent') {
             traceText = capitalize(traceData.type);
             script = traceData.contentPath || traceData.componentPath;
@@ -543,10 +543,11 @@ class WebSocketConnection {
             traceText = traceData.traceName;
             script = traceData.url || traceData.path;
             traceSize = formatSize(traceData.size);
+            traceMethod = traceData.method || '';
             app = traceData.type;
         }
         var tdTrace = $('<td>').text(traceText);
-        var tdMethod = $('<td>');
+        var tdMethod = $('<td>').text(traceMethod);
         var tdScriptClass = $('<td>').text(script).css('padding-left', trace.l * 8 + 'px');
         if (script && script.length > 40) {
             var tooltip = splitLine(script, 55);
