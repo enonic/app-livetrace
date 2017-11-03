@@ -110,6 +110,7 @@ class WebSocketConnection {
     var redrawTimer;
     var timeDurationMode = 'duration';
     var $ltRequestChart = $('.lt-request-chart');
+    var selectedTraceId = '';
 
     $(function () {
         sampling.enabled = !$('#checkSamplingDisabled').is(':visible');
@@ -388,15 +389,24 @@ class WebSocketConnection {
         };
 
         $('.lt-request-label').text(l + ' Requests');
-        for (i = 0; i < l; i++) {
+        var addedRows = $('.lt-http-req-table tbody tr').not('.lt-http-req-details').length;
+        var selectedRowEl;
+        for (i = addedRows; i < l; i++) {
             trace = traces[i];
             row = traceToRow(trace, maxDuration).addClass(i % 2 == 0 ? 'lt-even' : 'lt-odd');
+            if (trace.id === selectedTraceId) {
+                selectedRowEl = row;
+            }
             rows.push(row);
         }
 
-        $('.lt-http-req-table tbody tr').remove();
         setTableHeight();
         $('.lt-http-req-table tbody').append(rows);
+
+        if (selectedRowEl) {
+            debugger;
+            selectedRowEl.click();
+        }
     };
 
     var setTableHeight = function () {
@@ -405,7 +415,12 @@ class WebSocketConnection {
     };
 
     var traceToRow = function (trace, maxDuration) {
-        var tr = $('<tr>').on('click', rowClick).data('t', trace.children).data('md', maxDuration).data('s', new Date(trace.start));
+        var tr = $('<tr>')
+            .on('click', rowClick)
+            .data('t', trace.children)
+            .data('md', maxDuration)
+            .data('s', new Date(trace.start))
+            .data('id', trace.id);
         var traceData = trace.data || {};
         var tdArrow = $('<span class="lt-more-icon">&#9654;</span>');
         var tdStatus = $('<td>').append(tdArrow).append(document.createTextNode(traceData.status || ''));
@@ -482,6 +497,7 @@ class WebSocketConnection {
 
     var rowClick = function (e) {
         var $this = $(this);
+        selectedTraceId = $this.data('id');
         var currentSelected = $this.next('tr').hasClass('lt-http-req-details');
         $('.lt-http-req-details').remove();
         var selected = $('.lt-http-sel');
