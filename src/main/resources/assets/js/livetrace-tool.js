@@ -147,6 +147,7 @@ class WebSocketConnection {
         requestConn = new WebSocketConnection(svcUrl + 'sampling');
         requestConn.onMessage(onRequestMessage);
         requestConn.onError(() => {
+            checkAuthenticated();
             if (sampling.enabled) {
                 if (!wsAvailable) {
                     $('.lt-http-trace-websocket-message').show().addClass('shake');
@@ -229,6 +230,17 @@ class WebSocketConnection {
         });
     };
 
+    var checkAuthenticated = function () {
+        $.ajax({
+            url: svcUrl + 'status',
+            method: "GET"
+        }).fail(function (jqXHR) {
+            if (jqXHR.status === 401) {
+                location.reload();
+            }
+        });
+    };
+
     var startSampling = function () {
         console.log('Start sampling...');
         sampling.traces = [];
@@ -259,6 +271,7 @@ class WebSocketConnection {
         samplingConn = new WebSocketConnection(svcUrl + 'tracing');
         samplingConn.onMessage(samplingTracesReceived);
         samplingConn.onError(() => {
+            checkAuthenticated();
             clearInterval(samplingIntervalId);
             $('#stopSampling').hide();
             $('#startSampling').show();
