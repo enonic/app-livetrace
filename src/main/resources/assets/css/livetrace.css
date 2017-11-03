@@ -421,12 +421,13 @@ table.lt-http-req-table tbody tr.lt-odd:hover {
 }
 
 table.lt-http-req-table tbody tr.lt-even:hover {
-    background-color: #f0f0f0;
+    /*background-color: #f0f0f0;*/
+    background-color: #dce2e9;
 }
 
-table.lt-http-req-table tbody tr.lt-odd {
-    background-color: #ecf2f9;
-}
+/*table.lt-http-req-table tbody tr.lt-odd {*/
+/*background-color: #ecf2f9;*/
+/*}*/
 
 tr.lt-sub-header {
     font-weight: bold;
@@ -542,6 +543,12 @@ table.lt-http-req-table tbody tr.lt-http-sel {
 
 table.lt-http-req-table tbody tr.lt-http-sel:hover {
     background-color: #f3f3ff;
+}
+
+table.lt-http-req-table td > span.lt-more-icon {
+    float: left;
+    font-size: 10px;
+    color: #808080;
 }
 
 /* duration bar */

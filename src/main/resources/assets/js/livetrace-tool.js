@@ -407,7 +407,11 @@ class WebSocketConnection {
     var traceToRow = function (trace, maxDuration) {
         var tr = $('<tr>').on('click', rowClick).data('t', trace.children).data('md', maxDuration).data('s', new Date(trace.start));
         var traceData = trace.data || {};
-        var tdStatus = $('<td>').text(traceData.status);
+        var tdArrow = $('<span class="lt-more-icon">&#9654;</span>');
+        var tdStatus = $('<td>').append(tdArrow).append(document.createTextNode(traceData.status || ''));
+        if (!trace.children || trace.children.length === 0) {
+            tdArrow.css('visibility', 'hidden');
+        }
         var tdMethod = $('<td>').text(traceData.method || '');
         var tdPath = $('<td>').text(traceData.path || '');
         if (traceData.path && traceData.path.length > 40) {
@@ -477,22 +481,26 @@ class WebSocketConnection {
     };
 
     var rowClick = function (e) {
-        var currentSelected = $(this).next('tr').hasClass('lt-http-req-details');
+        var $this = $(this);
+        var currentSelected = $this.next('tr').hasClass('lt-http-req-details');
         $('.lt-http-req-details').remove();
-        $('.lt-http-sel').removeClass('lt-http-sel');
+        var selected = $('.lt-http-sel');
+        selected.find('.lt-more-icon').html('&#9654;');
+        selected.removeClass('lt-http-sel');
 
         if (currentSelected) {
             return;
         }
-        $(this).addClass('lt-http-sel');
+        $this.addClass('lt-http-sel');
+        $this.find('.lt-more-icon').html('&#9660;');
 
-        var subTraces = $(this).data('t');
+        var subTraces = $this.data('t');
         if (!subTraces || subTraces.length === 0) {
             return;
         }
-        var maxDuration = $(this).data('md');
-        var oddEven = $(this).hasClass('lt-even') ? 'lt-even' : 'lt-odd';
-        var parentStart = $(this).data('s');
+        var maxDuration = $this.data('md');
+        var oddEven = $this.hasClass('lt-even') ? 'lt-even' : 'lt-odd';
+        var parentStart = $this.data('s');
 
         var head = $(
             '<tr class="lt-http-req-details lt-http-sel lt-sub-header">' +
@@ -513,7 +521,7 @@ class WebSocketConnection {
             bodyTr.addClass(oddEven).addClass('lt-http-sel');
             bodyTrs.push(bodyTr);
         }
-        $(this).after(bodyTrs);
+        $this.after(bodyTrs);
     };
 
     var flattenTraces = function (traces, res, level) {
