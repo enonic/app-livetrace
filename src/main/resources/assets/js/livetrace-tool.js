@@ -317,7 +317,7 @@ class WebSocketConnection {
 
     var httpApplyUrlFilter = function (e) {
         sampling.httpFilterUrl = $('#filterUrl').val().trim();
-        displayTraceTable();
+        displayTraceTable(true);
     };
 
     var httpApplyFilter = function (e) {
@@ -326,12 +326,12 @@ class WebSocketConnection {
 
         sampling.httpFilterType = e.data.t;
         sampling.httpFilterUrl = $('#filterUrl').val().trim();
-        displayTraceTable();
+        displayTraceTable(true);
     };
 
     var toggleTime = function (e) {
         timeDurationMode = timeDurationMode === 'duration' ? 'time' : 'duration';
-        displayTraceTable();
+        displayTraceTable(true);
     };
 
     var httpFilters = {
@@ -374,7 +374,7 @@ class WebSocketConnection {
 
         traces = traces.filter(function (t) {
             var r = (!filterSet || f(t)) && (!searchSet || (t.data.path.indexOf(sampling.httpFilterUrl) > -1));
-            if (r && t.duration > maxDuration) {
+            if (r && (t.duration > maxDuration)) {
                 maxDuration = t.duration;
             }
             return r;
@@ -385,7 +385,7 @@ class WebSocketConnection {
         return traces;
     };
 
-    var displayTraceTable = function () {
+    var displayTraceTable = function (forceRefresh) {
         var traces = filterTraces(sampling.traces);
         var maxDuration = sampling.httpFilterMaxDuration || sampling.maxDuration;
         var i, l = traces.length, trace, row, rows = [];
@@ -400,6 +400,9 @@ class WebSocketConnection {
             showOn: 'mouseover',
             delay: 0.8
         };
+        if (forceRefresh) {
+            $('.lt-http-req-table tbody tr').remove();
+        }
 
         $('.lt-request-label').text(l + ' Requests');
         var addedRows = $('.lt-http-req-table tbody tr').not('.lt-http-req-details').length;
@@ -417,7 +420,6 @@ class WebSocketConnection {
         $('.lt-http-req-table tbody').append(rows);
 
         if (selectedRowEl) {
-            debugger;
             selectedRowEl.click();
         }
     };
