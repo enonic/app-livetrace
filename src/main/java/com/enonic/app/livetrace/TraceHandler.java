@@ -28,7 +28,9 @@ public final class TraceHandler
 {
     private final static Logger LOG = LoggerFactory.getLogger( TraceHandler.class );
 
-    private static final String LIVE_TRACE_APP_PREFIX = "com.enonic.app.livetrace:";
+    private static final String LIVE_TRACE_APP = "com.enonic.app.livetrace";
+
+    private static final String LIVE_TRACE_APP_PREFIX = LIVE_TRACE_APP + ":";
 
     private static final Long DEFAULT_MAX_MINUTES = 10L;
 
@@ -84,8 +86,11 @@ public final class TraceHandler
         {
             return;
         }
-//        System.out.println( trace.getName() + " -> " + trace.get( "method" ) + " " + trace.get( "path" ) + " (" +
-//                                trace.getDuration().toString().substring( 2 ).toLowerCase() + ")" );
+        final String sourceApp = (String) trace.get( "app" );
+        if ( sourceApp != null && sourceApp.equals( LIVE_TRACE_APP ) )
+        {
+            return;
+        }
 
         if ( "portalRequest".equals( trace.getName() ) )
         {

@@ -43,7 +43,7 @@ var setupRequestRateTask = function () {
     var taskRunning = false, task;
     for (var i = 0; i < tasks.length; i++) {
         task = tasks[i];
-        if (task.description == REQUEST_BROADCAST_TASK && task.state === 'RUNNING') {
+        if (task.description === REQUEST_BROADCAST_TASK && task.state === 'RUNNING') {
             taskRunning = true;
             break;
         }

@@ -127,6 +127,7 @@ class WebSocketConnection {
         $('#httpTraceAsset').on('click', {t: 'asset'}, httpApplyFilter);
         $('#httpTraceImage').on('click', {t: 'image'}, httpApplyFilter);
         $('#httpTraceOther').on('click', {t: 'other'}, httpApplyFilter);
+        $('#httpTraceWs').on('click', {t: 'ws'}, httpApplyFilter);
         $('#timeToggle').on('click', toggleTime);
 
         var typingTimer, doneTypingInterval = 800;
@@ -291,6 +292,24 @@ class WebSocketConnection {
             return;
         }
 
+        // extract subtraces
+        var forceRefresh = false, t, pt, trace, parentTrace;
+        for (t = msg.traces.length - 1; t >= 0; t--) {
+            trace = msg.traces[t];
+            if (trace.data.parentId) {
+                msg.traces.splice(t, 1);
+                forceRefresh = true;
+                for (pt = 0; pt < sampling.traces.length; pt++) {
+                    parentTrace = sampling.traces[pt];
+                    if (parentTrace.id === trace.data.parentId) {
+                        parentTrace.children = (parentTrace.children || []);
+                        parentTrace.children.push(trace);
+                        break;
+                    }
+                }
+            }
+        }
+
         sampling.traces = sampling.traces.concat(msg.traces);
         sampling.maxDuration = Math.max(sampling.maxDuration, msg.maxDuration);
         sampling.httpFilterMaxDuration = null;
@@ -300,7 +319,7 @@ class WebSocketConnection {
         clearInterval(samplingIntervalId);
         samplingIntervalId = null;
 
-        displayTraceTable();
+        displayTraceTable(forceRefresh);
     };
 
     var stopSampling = function () {
@@ -356,9 +375,12 @@ class WebSocketConnection {
             var p = t.data.rawpath || t.data.path;
             return p && p.indexOf('/_/image/') > -1;
         },
+        'ws': function (t) {
+            return !!t.data.websocket;
+        },
         'other': function (t) {
             return !httpFilters.page(t) && !httpFilters.component(t) && !httpFilters.service(t) && !httpFilters.asset(t) &&
-                   !httpFilters.image(t);
+                   !httpFilters.image(t) && !httpFilters.ws(t);
         }
     };
 
@@ -594,6 +616,10 @@ class WebSocketConnection {
             traceText = 'App';
             app = traceData.app;
             script = traceData.script || traceData.path;
+        } else if (trace.name === 'websocket') {
+            traceText = 'WS';
+            app = traceData.type;
+            script = traceData.message || '';
         } else if (traceData.traceName) {
             traceText = traceData.traceName;
             script = traceData.url || traceData.path;

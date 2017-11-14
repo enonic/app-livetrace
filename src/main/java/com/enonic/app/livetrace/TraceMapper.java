@@ -1,5 +1,6 @@
 package com.enonic.app.livetrace;
 
+import java.util.List;
 import java.util.Map;
 
 import com.enonic.xp.script.serializer.MapGenerator;
@@ -40,7 +41,20 @@ public final class TraceMapper
     {
         for ( String key : values.keySet() )
         {
-            gen.value( key, values.get( key ) );
+            final Object value = values.get( key );
+            if ( value instanceof List )
+            {
+                gen.array( key );
+                for ( Object item : (List) value )
+                {
+                    gen.value( item );
+                }
+                gen.end();
+            }
+            else
+            {
+                gen.value( key, value );
+            }
         }
     }
 }
