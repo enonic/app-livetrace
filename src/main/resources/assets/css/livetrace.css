@@ -78,7 +78,12 @@ body > .lt-main-container {
     display: inline-block;
     padding: 4px 19px 4px 19px;
     margin: 0;
+    border-radius: 4px;
     cursor: pointer;
+}
+
+.lt-button:hover {
+    background-color: #d0d6d7;
 }
 
 .lt-button span {
@@ -105,14 +110,26 @@ body > .lt-main-container {
     margin-top: 9px;
 }
 
+.lt-sampling-button:hover {
+    background-color: #67b541;
+}
+
 .lt-sampling-stop-button {
     background-color: #f0a234;
     margin-top: 9px;
 }
 
+.lt-sampling-stop-button:hover {
+    background-color: #e69933;
+}
+
 .lt-sampling-disabled-button {
     background-color: #C72808;
     margin-top: 9px;
+}
+
+.lt-sampling-disabled-button:hover {
+    background-color: #bd2808;
 }
 
 .lt-main-container {
