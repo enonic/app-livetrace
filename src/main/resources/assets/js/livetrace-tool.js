@@ -376,7 +376,7 @@ class WebSocketConnection {
             return p && p.indexOf('/_/image/') > -1;
         },
         'ws': function (t) {
-            return !!t.data.websocket;
+            return isWebSocket(t);
         },
         'other': function (t) {
             return !httpFilters.page(t) && !httpFilters.component(t) && !httpFilters.service(t) && !httpFilters.asset(t) &&
@@ -459,8 +459,12 @@ class WebSocketConnection {
             .data('s', new Date(trace.start))
             .data('id', trace.id);
         var traceData = trace.data || {};
+        var isWS = isWebSocket(trace);
+        var wsStatus = isWS ? getWSStatus(trace) : '';
+
         var tdArrow = $('<span class="lt-more-icon">&#9654;</span>');
-        var tdStatus = $('<td>').append(tdArrow).append(document.createTextNode(traceData.status || ''));
+        var statusText = isWS ? '101' : (traceData.status || '');
+        var tdStatus = $('<td>').append(tdArrow).append(document.createTextNode(statusText));
         if (!trace.children || trace.children.length === 0) {
             tdArrow.css('visibility', 'hidden');
         }
@@ -470,7 +474,13 @@ class WebSocketConnection {
             var tooltip = splitLine(traceData.path, 55);
             new Opentip(tdPath.get(0), tooltip, {style: "tag"});
         }
-        var tdType = $('<td>').text(traceData.type || '');
+        var tdType = $('<td>');
+        if (isWS) {
+            tdType.text('WebSocket');
+            tdType.toggleClass('lt-ws-open', wsStatus === 'open');
+        } else {
+            tdType.text(traceData.type || '');
+        }
         var tdSize = $('<td>').text(formatSize(traceData.size));
         var tdDuration = $('<td>');
         if (timeDurationMode === 'duration') {
@@ -655,9 +665,13 @@ class WebSocketConnection {
 
     // Request Rate
     var initRequestRateData = function () {
+        let $chartCnt = $('.lt-request-chart-cnt');
+        var h = $chartCnt.height();
+        $chartCnt.css('min-height', h + 'px');
+
         var elW = $ltRequestChart.width();
         requestRate.chartBarWidth = Math.floor((elW - 2) / REQ_RATE_BAR_COUNT) - 1;
-        requestRate.chartHeight = Math.floor($('.lt-request-chart-cnt').height() - 20);
+        requestRate.chartHeight = Math.floor(h - 20);
         if (!requestRate.data) {
             requestRate.data = [];
             for (var i = 0; i < REQ_RATE_BAR_COUNT; i++) {
@@ -715,6 +729,29 @@ class WebSocketConnection {
             barSpacing: 1,
             tooltipSuffix: ' req/sec'
         });
+    };
+
+    var isWebSocket = function (trace) {
+        return !!trace.data.websocket;
+    };
+
+    var getWSStatus = function (trace) {
+        if (!trace.children || trace.children.length === 0) {
+            return '';
+        }
+        var child, status = '';
+        for (var i = 0, l = trace.children.length; i < l; i++) {
+            child = trace.children[i];
+            if (child.name === 'websocket') {
+                if (child.data.type === 'open') {
+                    status = 'open';
+                } else if (child.data.type === 'close') {
+                    status = 'closed';
+                    break;
+                }
+            }
+        }
+        return status;
     };
 
     var splitLine = function (text, maxLength) {

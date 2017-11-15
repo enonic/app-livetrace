@@ -394,6 +394,7 @@ table.lt-http-req-table tbody {
     height: calc(100% - 24px);
     overflow: auto;
     overflow-y: scroll;
+    overflow-x: hidden;
 
     border-top: 1px solid #dadfe0;
 }
@@ -549,6 +550,10 @@ table.lt-http-req-table td > span.lt-more-icon {
     float: left;
     font-size: 10px;
     color: #808080;
+}
+
+table.lt-http-req-table td.lt-ws-open {
+    color: #609e3a;
 }
 
 /* duration bar */
