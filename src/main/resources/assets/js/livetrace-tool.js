@@ -435,7 +435,13 @@ class WebSocketConnection {
             tdArrow.css('visibility', 'hidden');
         }
         var tdMethod = $('<td>').text(traceData.method || '');
-        var tdPath = $('<td>').text(traceData.path || '');
+        var tdPath = $('<td>');
+        if (traceData.url) {
+            tdPath.text(traceData.url.substring(traceData.url.indexOf('://') + 3));
+        } else {
+            tdPath.text(traceData.path || '');
+        }
+
         if (traceData.path && traceData.path.length > 40) {
             var tooltip = splitLine(traceData.path, 55);
             new Opentip(tdPath.get(0), tooltip, {style: "tag"});
@@ -513,6 +519,9 @@ class WebSocketConnection {
 
     var selectRow = function (traceId, $row) {
         selectedTraceIds[traceId] = $row;
+        if ($row.hasClass('lt-http-sel')) {
+            return;
+        }
         $row.addClass('lt-http-sel');
         $row.find('.lt-more-icon').html('&#9660;');
 
