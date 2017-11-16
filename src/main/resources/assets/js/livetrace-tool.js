@@ -110,7 +110,7 @@ class WebSocketConnection {
     var redrawTimer;
     var timeDurationMode = 'duration';
     var $ltRequestChart = $('.lt-request-chart');
-    var selectedTraceId = '';
+    var selectedTraceIds = {};
 
     $(function () {
         sampling.enabled = !$('#checkSamplingDisabled').is(':visible');
@@ -246,6 +246,7 @@ class WebSocketConnection {
         console.log('Start sampling...');
         sampling.traces = [];
         sampling.maxDuration = 500;
+        selectedTraceIds = {};
 
         $('#startSampling').hide();
         $('#stopSampling').show();
@@ -292,23 +293,7 @@ class WebSocketConnection {
             return;
         }
 
-        // extract subtraces
-        var forceRefresh = false, t, pt, trace, parentTrace;
-        for (t = msg.traces.length - 1; t >= 0; t--) {
-            trace = msg.traces[t];
-            if (trace.data.parentId) {
-                msg.traces.splice(t, 1);
-                forceRefresh = true;
-                for (pt = 0; pt < sampling.traces.length; pt++) {
-                    parentTrace = sampling.traces[pt];
-                    if (parentTrace.id === trace.data.parentId) {
-                        parentTrace.children = (parentTrace.children || []);
-                        parentTrace.children.push(trace);
-                        break;
-                    }
-                }
-            }
-        }
+        var forceRefresh = extractSubtraces(msg.traces);
 
         sampling.traces = sampling.traces.concat(msg.traces);
         sampling.maxDuration = Math.max(sampling.maxDuration, msg.maxDuration);
@@ -407,6 +392,29 @@ class WebSocketConnection {
         return traces;
     };
 
+    var extractSubtraces = function (traces) {
+        var forceRefresh = false, t, pt, trace, parentTrace;
+        for (t = traces.length - 1; t >= 0; t--) {
+            trace = traces[t];
+            if (trace.data.parentId) {
+                traces.splice(t, 1);
+                forceRefresh = true;
+                for (pt = 0; pt < sampling.traces.length; pt++) {
+                    parentTrace = sampling.traces[pt];
+                    if (parentTrace.id === trace.data.parentId) {
+                        parentTrace.children = (parentTrace.children || []);
+                        parentTrace.children.push(trace);
+                        break;
+                    }
+                }
+                if (trace.children) {
+                    extractSubtraces(trace.children);
+                }
+            }
+        }
+        return forceRefresh;
+    };
+
     var displayTraceTable = function (forceRefresh) {
         var traces = filterTraces(sampling.traces);
         var maxDuration = sampling.httpFilterMaxDuration || sampling.maxDuration;
@@ -428,22 +436,21 @@ class WebSocketConnection {
 
         $('.lt-request-label').text(l + ' Requests');
         var addedRows = $('.lt-http-req-table tbody tr').not('.lt-http-req-details').length;
-        var selectedRowEl;
         for (i = addedRows; i < l; i++) {
             trace = traces[i];
-            row = traceToRow(trace, maxDuration).addClass(i % 2 == 0 ? 'lt-even' : 'lt-odd');
-            if (trace.id === selectedTraceId) {
-                selectedRowEl = row;
-            }
+            row = traceToRow(trace, maxDuration).addClass(i % 2 === 0 ? 'lt-even' : 'lt-odd');
             rows.push(row);
+            if (!!selectedTraceIds[trace.id]) {
+                selectedTraceIds[trace.id] = row;
+            }
         }
 
         setTableHeight();
         $('.lt-http-req-table tbody').append(rows);
 
-        if (selectedRowEl) {
-            selectedRowEl.click();
-        }
+        Object.keys(selectedTraceIds).forEach(function (traceId) {
+            selectRow(traceId, selectedTraceIds[traceId]);
+        });
     };
 
     var setTableHeight = function () {
@@ -542,28 +549,18 @@ class WebSocketConnection {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     };
 
-    var rowClick = function (e) {
-        var $this = $(this);
-        selectedTraceId = $this.data('id');
-        var currentSelected = $this.next('tr').hasClass('lt-http-req-details');
-        $('.lt-http-req-details').remove();
-        var selected = $('.lt-http-sel');
-        selected.find('.lt-more-icon').html('&#9654;');
-        selected.removeClass('lt-http-sel');
+    var selectRow = function (traceId, $row) {
+        selectedTraceIds[traceId] = $row;
+        $row.addClass('lt-http-sel');
+        $row.find('.lt-more-icon').html('&#9660;');
 
-        if (currentSelected) {
-            return;
-        }
-        $this.addClass('lt-http-sel');
-        $this.find('.lt-more-icon').html('&#9660;');
-
-        var subTraces = $this.data('t');
+        var subTraces = $row.data('t');
         if (!subTraces || subTraces.length === 0) {
             return;
         }
-        var maxDuration = $this.data('md');
-        var oddEven = $this.hasClass('lt-even') ? 'lt-even' : 'lt-odd';
-        var parentStart = $this.data('s');
+        var maxDuration = $row.data('md');
+        var oddEven = $row.hasClass('lt-even') ? 'lt-even' : 'lt-odd';
+        var parentStart = $row.data('s');
 
         var head = $(
             '<tr class="lt-http-req-details lt-http-sel lt-sub-header">' +
@@ -575,16 +572,38 @@ class WebSocketConnection {
             '<td></td>' +
             '<td class="lt-http-req-sub-time" colspan="4">Execution time</td>' +
             '</tr>')
-            .addClass(oddEven);
+            .addClass(oddEven).data('id', traceId);
 
         var i, l, traces = [], bodyTr, bodyTrs = [head];
         flattenTraces(subTraces, traces);
         for (i = 0, l = traces.length; i < l; i++) {
             bodyTr = subtraceToRow(traces[i], maxDuration, parentStart);
-            bodyTr.addClass(oddEven).addClass('lt-http-sel');
+            bodyTr.addClass(oddEven).addClass('lt-http-sel').data('id', traceId);
             bodyTrs.push(bodyTr);
         }
-        $this.after(bodyTrs);
+        $row.after(bodyTrs);
+    };
+
+    var unselectRow = function (traceId, $row) {
+        delete selectedTraceIds[traceId];
+
+        $('.lt-http-req-details').filter(function () {
+            return $(this).data("id") === traceId;
+        }).remove();
+        $row.find('.lt-more-icon').html('&#9654;');
+        $row.removeClass('lt-http-sel');
+    };
+
+    var rowClick = function (e) {
+        var $this = $(this);
+        var traceId = $this.data('id');
+        var wasSelected = !!selectedTraceIds[traceId];
+
+        if (wasSelected) {
+            unselectRow(traceId, $this);
+        } else {
+            selectRow(traceId, $this);
+        }
     };
 
     var flattenTraces = function (traces, res, level) {
