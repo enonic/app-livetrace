@@ -8,6 +8,7 @@ import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.script.serializer.MapGenerator;
 import com.enonic.xp.script.serializer.MapSerializable;
+import com.enonic.xp.trace.TraceManager;
 import com.enonic.xp.trace.Tracer;
 
 public class SamplingHandler
@@ -15,9 +16,16 @@ public class SamplingHandler
 {
     private Supplier<TraceHandler> traceHandlerSupplier;
 
+    private Supplier<TraceManager> traceManagerSupplier;
+
     public String startSampling( final Consumer<Object> onSample )
     {
-        final TraceCollector collector = new TraceCollector();
+        final TraceManager traceManager = traceManagerSupplier.get();
+        if ( !isEnabled() )
+        {
+            traceManager.enable( true );
+        }
+        final TraceCollector collector = new TraceCollector( traceManager );
         collector.setOnTrace( onSample );
         final TraceHandler traceHandler = traceHandlerSupplier.get();
         traceHandler.register( collector );
@@ -32,6 +40,7 @@ public class SamplingHandler
         {
             collector.shutdown();
         }
+        traceManagerSupplier.get().enable( false );
     }
 
     public int getRequestsPerSecond()
@@ -56,5 +65,6 @@ public class SamplingHandler
     public void initialize( final BeanContext context )
     {
         traceHandlerSupplier = context.getService( TraceHandler.class );
+        traceManagerSupplier = context.getService( TraceManager.class );
     }
 }

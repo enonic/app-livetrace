@@ -15,6 +15,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 
 import com.enonic.xp.trace.Trace;
+import com.enonic.xp.trace.TraceManager;
 
 public final class TraceCollector
 {
@@ -30,13 +31,16 @@ public final class TraceCollector
 
     private final ExecutorService scheduler;
 
-    public TraceCollector()
+    private final TraceManager traceManager;
+
+    public TraceCollector( final TraceManager traceMan )
     {
         id = UUID.randomUUID().toString();
         traces = Multimaps.synchronizedListMultimap( ArrayListMultimap.create() );
         requestCount = new AtomicInteger( 0 );
         started = Instant.now();
         scheduler = Executors.newFixedThreadPool( 10 );
+        traceManager = traceMan;
     }
 
     public void shutdown()
@@ -53,6 +57,7 @@ public final class TraceCollector
         {
             onTrace.accept( "stop" );
         }
+        traceManager.enable( false );
     }
 
     public void add( final Trace trace )

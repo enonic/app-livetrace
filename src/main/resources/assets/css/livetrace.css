@@ -123,15 +123,6 @@ body > .lt-main-container {
     background-color: #e69933;
 }
 
-.lt-sampling-disabled-button {
-    background-color: #C72808;
-    margin-top: 9px;
-}
-
-.lt-sampling-disabled-button:hover {
-    background-color: #bd2808;
-}
-
 .lt-main-container {
     font-size: 16px;
 
@@ -238,6 +229,7 @@ body > .lt-main-container {
 
 .lt-filter-url {
     float: right;
+    width: 60%;
 }
 
 .lt-http-toolbar-right {
@@ -269,6 +261,7 @@ body > .lt-main-container {
     margin-bottom: 8px;
     font-size: 15px;
     margin-right: 20px;
+    white-space: nowrap;
 }
 
 .lt-http-panel {

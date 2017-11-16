@@ -92,7 +92,6 @@ class WebSocketConnection {
     var requestConn = null, samplingConn = null, wsAvailable = false;
     var samplingId, samplingIntervalId, samplingCount = 0;
     var sampling = {
-        enabled: false,
         traces: [],
         maxDuration: 500,
         httpFilterMaxDuration: null,
@@ -113,12 +112,9 @@ class WebSocketConnection {
     var selectedTraceIds = {};
 
     $(function () {
-        sampling.enabled = !$('#checkSamplingDisabled').is(':visible');
-        $('.lt-http-trace-disabled-message').toggle(!sampling.enabled);
-        $('.lt-http-requests').toggle(sampling.enabled);
+        $('.lt-http-requests').show();
         $('#startSampling').on('click', startSampling);
         $('#stopSampling').on('click', stopSampling);
-        $('#checkSamplingDisabled').on('click', checkTracingEnabled);
 
         $('#httpTraceAll').on('click', {t: 'all'}, httpApplyFilter);
         $('#httpTracePage').on('click', {t: 'page'}, httpApplyFilter);
@@ -149,30 +145,22 @@ class WebSocketConnection {
         requestConn.onMessage(onRequestMessage);
         requestConn.onError(() => {
             checkAuthenticated();
-            if (sampling.enabled) {
                 if (!wsAvailable) {
                     $('.lt-http-trace-websocket-message').show().addClass('shake');
                     $('.lt-http-requests').hide();
                     $('#startSampling').hide();
                     $('#stopSampling').hide();
-                    $('#checkSamplingDisabled').show();
                 } else {
                     $('#startSampling').show();
                     $('#stopSampling').hide();
-                    $('#checkSamplingDisabled').hide();
                 }
-            }
         });
         requestConn.onConnect(() => {
             wsAvailable = true;
-            if (sampling.enabled) {
-                $('.lt-http-trace-disabled-message').hide();
                 $('.lt-http-trace-websocket-message').hide();
                 $('.lt-http-requests').show();
                 $('#startSampling').show();
                 $('#stopSampling').hide();
-                $('#checkSamplingDisabled').hide();
-            }
         });
         requestConn.connect();
 
@@ -202,35 +190,6 @@ class WebSocketConnection {
     };
 
     // HTTP
-    var checkTracingEnabled = function () {
-        $(this).blur();
-        $('.lt-http-trace-disabled-message,.lt-http-trace-websocket-message').removeClass('shake');
-
-        if (!$('.lt-http-trace-disabled-message').is(':visible')) {
-            requestConn.connect();
-            return;
-        }
-
-        $.ajax({
-            url: svcUrl + 'status',
-            method: "GET"
-        }).done(function (resp) {
-            sampling.enabled = resp.enabled;
-            $('.lt-http-trace-disabled-message').toggle(!sampling.enabled);
-            $('.lt-http-requests').toggle(sampling.enabled);
-            $('#startSampling').toggle(sampling.enabled);
-            $('#stopSampling').hide();
-            $('#checkSamplingDisabled').toggle(!sampling.enabled);
-
-            if (!sampling.enabled) {
-                $('.lt-http-trace-disabled-message').toggleClass('shake');
-            }
-
-        }).fail(function (jqXHR, textStatus) {
-
-        });
-    };
-
     var checkAuthenticated = function () {
         $.ajax({
             url: svcUrl + 'status',
