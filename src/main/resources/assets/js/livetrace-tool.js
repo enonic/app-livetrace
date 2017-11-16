@@ -145,22 +145,22 @@ class WebSocketConnection {
         requestConn.onMessage(onRequestMessage);
         requestConn.onError(() => {
             checkAuthenticated();
-                if (!wsAvailable) {
-                    $('.lt-http-trace-websocket-message').show().addClass('shake');
-                    $('.lt-http-requests').hide();
-                    $('#startSampling').hide();
-                    $('#stopSampling').hide();
-                } else {
-                    $('#startSampling').show();
-                    $('#stopSampling').hide();
-                }
+            if (!wsAvailable) {
+                $('.lt-http-trace-websocket-message').show().addClass('shake');
+                $('.lt-http-requests').hide();
+                $('#startSampling').hide();
+                $('#stopSampling').hide();
+            } else {
+                $('#startSampling').show();
+                $('#stopSampling').hide();
+            }
         });
         requestConn.onConnect(() => {
             wsAvailable = true;
-                $('.lt-http-trace-websocket-message').hide();
-                $('.lt-http-requests').show();
-                $('#startSampling').show();
-                $('#stopSampling').hide();
+            $('.lt-http-trace-websocket-message').hide();
+            $('.lt-http-requests').show();
+            $('#startSampling').show();
+            $('#stopSampling').hide();
         });
         requestConn.connect();
 
@@ -463,10 +463,13 @@ class WebSocketConnection {
         return tr;
     };
 
-    var makeBar = function (widthPercent, offset, clz) {
+    var makeBar = function (widthPercent, offset, clz, level) {
         var bar = $('<div class="lt-progress-bar horizontal">');
         var track = $('<div class="lt-progress-track">');
         var fill = $('<div class="lt-progress-fill">').css('width', widthPercent + '%').addClass(clz);
+        if (level) {
+            fill.addClass('level' + level);
+        }
         if (offset) {
             fill.css('left', offset + '%');
         }
@@ -631,7 +634,7 @@ class WebSocketConnection {
         var offset = new Date(trace.start).getTime() - parentStart.getTime();
         var offsetWidth = Math.ceil((offset / maxDuration) * 100);
         var barWidth = Math.ceil((trace.duration / maxDuration) * 100);
-        var bar = makeBar(barWidth, offsetWidth, '');
+        var bar = makeBar(barWidth, offsetWidth, '', trace.l);
         tdTimeBar.append(bar);
         tr.append([tdTrace, tdMethod, tdScriptClass, tdApp, tdSize, tdDuration, tdTimeBar]);
         return tr;
