@@ -504,11 +504,11 @@ table.lt-http-req-table td:nth-child(7) {
 
 /* column alignments */
 table.lt-http-req-table td:nth-child(1) {
-    text-align: center;
+    text-align: left;
 }
 
 table.lt-http-req-table td:nth-child(2) {
-    text-align: center;
+    text-align: left;
 }
 
 table.lt-http-req-table td:nth-child(3) {
