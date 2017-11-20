@@ -1,103 +1,567 @@
-class WebSocketConnection {
-    constructor(url) {
-        this.url = this._getWebSocketUrl(url);
-        this.webSocket = null;
-        this.connected = false;
-        this.keepAliveIntervalId = null;
-        this.reconnectTimeoutId = null;
-        this.onMessageCallback = null;
-        this.onConnectCallback = null;
-        this.onErrorCallback = null;
-    }
-
-    connect() {
-        this.connected = false;
-        clearTimeout(this.reconnectTimeoutId);
-        const ws = new WebSocket(this.url, ['livetrace']);
-        this.webSocket = ws;
-        ws.onopen = this._onWsOpen.bind(this);
-        ws.onclose = this._onWsClose.bind(this);
-        ws.onmessage = this._onWsMessage.bind(this);
-        ws.onerror = this._onWsError.bind(this);
-    }
-
-    disconnect() {
-        this.connected = false;
-        clearInterval(this.keepAliveIntervalId);
-        this.webSocket && this.webSocket.close(1000);
-    }
-
-    send(msg) {
-        if (this.connected) {
-            this.webSocket.send(JSON.stringify(msg));
-        }
-    }
-
-    onConnect(callback) {
-        this.onConnectCallback = callback;
-    }
-
-    onMessage(callback) {
-        this.onMessageCallback = callback;
-    }
-
-    onError(callback) {
-        this.onErrorCallback = callback;
-    }
-
-    _onWsOpen() {
-        console.log('connect WS (' + this.url + ')');
-        this.keepAliveIntervalId = setInterval(function () {
-            if (this.connected) {
-                this.webSocket.send('{"action":"KeepAlive"}');
-            }
-        }, 30 * 1000);
-        this.connected = true;
-
-        if (this.onConnectCallback) {
-            this.onConnectCallback();
-        }
-    }
-
-    _onWsClose() {
-        clearInterval(this.keepAliveIntervalId);
-        if (!this.connected) {
-            return;
-        }
-        this.connected = false;
-        this.reconnectTimeoutId = setTimeout(() => this.connect(), 5000); // attempt to reconnect
-    }
-
-    _onWsMessage(event) {
-        const msg = JSON.parse(event.data);
-        if (this.onMessageCallback) {
-            this.onMessageCallback(msg);
-        }
-    }
-
-    _onWsError(e) {
-        if (this.onErrorCallback) {
-            this.onErrorCallback(e);
-        }
-    }
-
-    _getWebSocketUrl(path) {
-        const l = window.location;
-        return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + path;
-    }
-}
-
+"use strict";
 (function ($, svcUrl) {
-    "use strict";
-    var requestConn = null, samplingConn = null, wsAvailable = false;
-    var samplingId, samplingIntervalId, samplingCount = 0;
-    var sampling = {
-        traces: [],
-        maxDuration: 500,
-        httpFilterMaxDuration: null,
-        httpFilterType: '',
-        httpFilterUrl: ''
+
+    class WebSocketConnection {
+        constructor(url) {
+            this.url = this._getWebSocketUrl(url);
+            this.webSocket = null;
+            this.connected = false;
+            this.keepAliveIntervalId = null;
+            this.reconnectTimeoutId = null;
+            this.onMessageCallback = null;
+            this.onConnectCallback = null;
+            this.onErrorCallback = null;
+        }
+
+        connect() {
+            this.connected = false;
+            clearTimeout(this.reconnectTimeoutId);
+            const ws = new WebSocket(this.url, ['livetrace']);
+            this.webSocket = ws;
+            ws.onopen = this._onWsOpen.bind(this);
+            ws.onclose = this._onWsClose.bind(this);
+            ws.onmessage = this._onWsMessage.bind(this);
+            ws.onerror = this._onWsError.bind(this);
+        }
+
+        disconnect() {
+            this.connected = false;
+            clearInterval(this.keepAliveIntervalId);
+            this.webSocket && this.webSocket.close(1000);
+        }
+
+        send(msg) {
+            if (this.connected) {
+                this.webSocket.send(JSON.stringify(msg));
+            }
+        }
+
+        onConnect(callback) {
+            this.onConnectCallback = callback;
+        }
+
+        onMessage(callback) {
+            this.onMessageCallback = callback;
+        }
+
+        onError(callback) {
+            this.onErrorCallback = callback;
+        }
+
+        _onWsOpen() {
+            console.log('connect WS (' + this.url + ')');
+            this.keepAliveIntervalId = setInterval(function () {
+                if (this.connected) {
+                    this.webSocket.send('{"action":"KeepAlive"}');
+                }
+            }, 30 * 1000);
+            this.connected = true;
+
+            if (this.onConnectCallback) {
+                this.onConnectCallback();
+            }
+        }
+
+        _onWsClose() {
+            clearInterval(this.keepAliveIntervalId);
+            if (!this.connected) {
+                return;
+            }
+            this.connected = false;
+            this.reconnectTimeoutId = setTimeout(() => this.connect(), 5000); // attempt to reconnect
+        }
+
+        _onWsMessage(event) {
+            const msg = JSON.parse(event.data);
+            if (this.onMessageCallback) {
+                this.onMessageCallback(msg);
+            }
+        }
+
+        _onWsError(e) {
+            if (this.onErrorCallback) {
+                this.onErrorCallback(e);
+            }
+        }
+
+        _getWebSocketUrl(path) {
+            const l = window.location;
+            return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + path;
+        }
+    }
+
+    var splitLine = function (text, maxLength) {
+        if (text == null) {
+            return '';
+        }
+        if (text.length <= maxLength) {
+            return text;
+        }
+        var p = text.lastIndexOf('/', maxLength);
+        if (p <= 0 || p > maxLength) {
+            p = maxLength;
+        }
+        return text.slice(0, p) + "\r\n" + splitLine(text.slice(p), maxLength);
     };
+
+    var formatSize = function (bytes) {
+        if (bytes == undefined) {
+            return '-';
+        }
+        if (bytes == 0) {
+            return '0 B';
+        }
+        var k = 1000,
+            sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+            i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    };
+
+    class TraceTable {
+        constructor() {
+            this.traces = [];
+            this.maxDuration = 500;
+            this.httpFilterMaxDuration = null;
+            this.httpFilterType = '';
+            this.httpFilterUrl = '';
+            this.shouldRefresh = false;
+            this.httpFilters = this.initHttpFilters();
+        }
+
+        clear() {
+            this.traces = [];
+            this.maxDuration = 500;
+        }
+
+        setFilterType(filterType) {
+            this.httpFilterType = filterType;
+        }
+
+        setFilterUrl(filterUrl) {
+            this.httpFilterUrl = filterUrl;
+        }
+
+        addTraceData(traceElements, maxDuration) {
+            this.shouldRefresh = this.extractSubtraces(traceElements, maxDuration);
+
+            this.maxDuration = Math.max(this.maxDuration, maxDuration);
+
+            var traces = traceElements.map((t) => new Trace(t, null, this.maxDuration));
+            this.traces = this.traces.concat(traces);
+
+            this.httpFilterMaxDuration = null;
+        }
+
+        extractSubtraces(traces, maxDuration) {
+            var forceRefresh = false, t, pt, trace, parentTrace;
+            for (t = traces.length - 1; t >= 0; t--) {
+                trace = traces[t];
+                if (trace.data.parentId) {
+                    traces.splice(t, 1);
+                    forceRefresh = true;
+                    for (pt = 0; pt < this.traces.length; pt++) {
+                        parentTrace = this.traces[pt];
+                        if (parentTrace.trace.id === trace.data.parentId) {
+                            parentTrace.trace.children = (parentTrace.trace.children || []);
+                            parentTrace.trace.children.push(trace);
+                            parentTrace.children.push(new Trace(trace, parentTrace, maxDuration, parentTrace.level + 1));
+                            break;
+                        }
+                    }
+                    if (trace.children) {
+                        this.extractSubtraces(trace.children);
+                    }
+                }
+            }
+            return forceRefresh;
+        }
+
+        forceRefresh() {
+            this.shouldRefresh = true;
+        }
+
+        display() {
+            var traces = this.filterTraces();
+            var maxDuration = this.httpFilterMaxDuration || this.maxDuration;
+            var i, l = traces.length, trace, rows = [];
+            if (maxDuration <= 500) {
+                maxDuration = 500;
+            } else {
+                maxDuration = Math.ceil(maxDuration / 1000) * 1000;
+            }
+            setDurationScale(maxDuration);
+
+            Opentip.styles.tag = {
+                showOn: 'mouseover',
+                delay: 0.8
+            };
+            if (this.shouldRefresh) {
+                $('.lt-http-req-table tbody tr').remove();
+            }
+
+            $('.lt-request-label').text(l + ' Requests');
+            var addedRows = $('.lt-http-req-table tbody tr').not('.lt-http-req-details').length;
+            for (i = addedRows; i < l; i++) {
+                trace = traces[i];
+                trace.initTrace();
+                rows.push(trace.$row);
+            }
+
+            setTableHeight();
+            $('.lt-http-req-table tbody').append(rows);
+
+            // Object.keys(selectedTraceIds).forEach(function (traceId) {
+            //     selectRow(traceId, selectedTraceIds[traceId]);
+            // });
+            this.shouldRefresh = false;
+        }
+
+        initHttpFilters() {
+            var self = this;
+            return {
+                'all': null,
+                'page': function (t) {
+                    var tData = t.trace.data;
+                    var p = tData.rawpath || tData.path;
+                    return tData.type && tData.type.indexOf('text/html') > -1 && !(p && p.indexOf('/_/') > -1);
+                },
+                'component': function (t) {
+                    var tData = t.trace.data;
+                    var p = tData.rawpath || tData.path;
+                    return p && p.indexOf('/_/component/') > -1;
+                },
+                'service': function (t) {
+                    var tData = t.trace.data;
+                    var p = tData.rawpath || tData.path;
+                    return p && p.indexOf('/_/service/') > -1;
+                },
+                'asset': function (t) {
+                    var tData = t.trace.data;
+                    var p = tData.rawpath || tData.path;
+                    return p && p.indexOf('/_/asset/') > -1;
+                },
+                'image': function (t) {
+                    var tData = t.trace.data;
+                    var p = tData.rawpath || tData.path;
+                    return p && p.indexOf('/_/image/') > -1;
+                },
+                'ws': function (t) {
+                    return t.isWebSocket();
+                },
+                'other': function (t) {
+                    return !self.httpFilters.page(t) && !self.httpFilters.component(t) && !self.httpFilters.service(t) &&
+                           !self.httpFilters.asset(t) && !self.httpFilters.image(t) && !self.httpFilters.ws(t);
+                }
+            }
+        };
+
+        filterTraces() {
+            var traces = this.traces;
+            this.httpFilterMaxDuration = null;
+            var f = this.httpFilters[this.httpFilterType];
+            var filterSet = !!f, searchSet = this.httpFilterUrl !== '';
+            if (!filterSet && !searchSet) {
+                return traces;
+            }
+
+            var maxDuration = 0;
+
+            var self = this;
+            traces = traces.filter(function (t) {
+                var r = (!filterSet || f(t)) && (!searchSet || (t.path().indexOf(self.httpFilterUrl) > -1));
+                if (r && (t.duration() > maxDuration)) {
+                    maxDuration = t.duration();
+                }
+                return r;
+            });
+
+            this.httpFilterMaxDuration = maxDuration;
+
+            return traces;
+        }
+
+    }
+
+    class Trace {
+        constructor(trace, parent, maxDuration, level) {
+            this.trace = trace;
+            this.parent = parent;
+            this.$row = null;
+            this.$rowHeader = null;
+            this.level = level || 0;
+            this.maxDuration = maxDuration;
+            this.expanded = false;
+            this.visible = false;
+            this.children = [];
+            trace.children = trace.children || [];
+            for (let i = 0; i < trace.children.length; i++) {
+                this.children.push(new Trace(trace.children[i], this, maxDuration, this.level + 1));
+            }
+        }
+
+        id() {
+            return this.trace.id;
+        }
+
+        path() {
+            return this.trace.data.path || '';
+        }
+
+        duration() {
+            return this.trace.duration;
+        }
+
+        isWebSocket() {
+            return !!this.trace.data.websocket;
+        }
+
+        getWSStatus() {
+            var trace = this.trace;
+            if (!trace.children || trace.children.length === 0) {
+                return '';
+            }
+            var child, status = '';
+            for (var i = 0, l = trace.children.length; i < l; i++) {
+                child = trace.children[i];
+                if (child.name === 'websocket') {
+                    if (child.data.type === 'open') {
+                        status = 'open';
+                    } else if (child.data.type === 'close') {
+                        status = 'closed';
+                        break;
+                    }
+                }
+            }
+            return status;
+        }
+
+        initTrace() {
+            var trace = this.trace;
+            var tr = $('<tr>')
+                .addClass('lt-http-request')
+                .on('click', {self: this}, this.rowClick)
+                .data('s', new Date(trace.start))
+                .data('id', trace.id);
+            var traceData = trace.data || {};
+            var isWS = this.isWebSocket();
+            var wsStatus = isWS ? this.getWSStatus(trace) : '';
+
+            var tdArrow = $('<span class="lt-more-icon">&#9654;</span>');
+            var statusText = isWS ? '101' : (traceData.status || '');
+            var tdStatus = $('<td>').append(tdArrow).append(document.createTextNode(statusText));
+            if (!trace.children || trace.children.length === 0) {
+                tdArrow.css('visibility', 'hidden');
+            }
+            var tdMethod = $('<td>').text(traceData.method || '');
+            var tdPath = $('<td>');
+            if (traceData.url) {
+                tdPath.text(traceData.url.substring(traceData.url.indexOf('://') + 3));
+            } else {
+                tdPath.text(traceData.path || '');
+            }
+
+            if (traceData.path && traceData.path.length > 40) {
+                var tooltip = splitLine(traceData.path, 55);
+                new Opentip(tdPath.get(0), tooltip, {style: "tag"});
+            }
+            var tdType = $('<td>');
+            if (isWS) {
+                tdType.text('WebSocket');
+                tdType.toggleClass('lt-ws-open', wsStatus === 'open');
+            } else {
+                tdType.text(traceData.type || '');
+            }
+            var tdSize = $('<td>').text(formatSize(traceData.size));
+            var tdDuration = $('<td>');
+            if (timeDurationMode === 'duration') {
+                tdDuration.text(trace.duration + ' ms');
+            } else {
+                tdDuration.text(formatTimeWithMillis(new Date(trace.start)));
+            }
+            var tdTimeBar = $('<td colspan="4">');
+
+            var barWidth = Math.ceil((trace.duration / this.maxDuration) * 100);
+            var bar = this.makeBar(barWidth, 0, traceSpeed(trace.duration));
+            tdTimeBar.append(bar);
+            tr.append([tdStatus, tdMethod, tdPath, tdType, tdSize, tdDuration, tdTimeBar]);
+            this.$row = tr;
+        }
+
+        makeBar(widthPercent, offset, clz, level) {
+            var bar = $('<div class="lt-progress-bar horizontal">');
+            var track = $('<div class="lt-progress-track">');
+            var fill = $('<div class="lt-progress-fill">').css('width', widthPercent + '%').addClass(clz);
+            if (level) {
+                fill.addClass('level' + level);
+            }
+            if (offset) {
+                fill.css('left', offset + '%');
+            }
+
+            track.append(fill);
+            bar.append(track);
+            return bar;
+        }
+
+        rowClick(e) {
+            var self = e.data.self;
+            if (self.expanded) {
+                self.unselectRow();
+            } else {
+                self.selectRow();
+            }
+            self.expanded = !self.expanded;
+        }
+
+        unselectRow() {
+            for (let i = 0; i < this.children.length; i++) {
+                this.children[i].removeSubTrace();
+            }
+            if (this.$rowHeader) {
+                this.$rowHeader.remove();
+            }
+            this.$row.find('.lt-more-icon').html('&#9654;');
+            if (!this.parent) {
+                this.$row.removeClass('lt-http-sel');
+            }
+        }
+
+        selectRow() {
+            var $row = this.$row;
+            $row.addClass('lt-http-sel');
+            $row.find('.lt-more-icon').html('&#9660;');
+
+            var subTraces = this.children;
+            if (subTraces.length === 0) {
+                return;
+            }
+
+            var childrenRows = [];
+            if (this.level == 0) {
+                this.$rowHeader = $(
+                    '<tr class="lt-http-req-details lt-http-sel lt-sub-header">' +
+                    '<td>Trace</td>' +
+                    '<td></td>' +
+                    '<td>Script / Class</td>' +
+                    '<td>Application</td>' +
+                    '<td></td>' +
+                    '<td></td>' +
+                    '<td class="lt-http-req-sub-time" colspan="4">Execution time</td>' +
+                    '</tr>');
+                childrenRows.push(this.$rowHeader);
+            }
+
+            this.addSubTraces(childrenRows);
+            $row.after(childrenRows);
+        }
+
+        removeSubTrace() {
+            for (let i = 0; i < this.children.length; i++) {
+                this.children[i].removeSubTrace();
+            }
+            if (this.$row) {
+                this.$row.remove();
+                this.$row = null;
+            }
+        }
+
+        baseStart() {
+            if (this.parent) {
+                return this.parent.baseStart();
+            }
+            return new Date(this.trace.start);
+        }
+
+        addSubTraces($trs) {
+            var parentStart = this.baseStart();
+            var traceChild;
+            for (var i = 0, l = this.children.length; i < l; i++) {
+                traceChild = this.children[i];
+                traceChild.initChildTrace(parentStart);
+                traceChild.$row.addClass('lt-http-sel');
+                $trs.push(traceChild.$row);
+            }
+        }
+
+        initChildTrace(parentStart) {
+            var trace = this.trace || {};
+            var traceData = trace.data || {};
+            var script = traceData.script, app = '';
+            if (script) {
+                var p = traceData.script.indexOf(':');
+                if (p > -1) {
+                    app = script.substring(0, p);
+                    script = script.substring(p + 1);
+                }
+            }
+
+            var tr = $('<tr class="lt-http-req-details">').on('click', {self: this}, this.rowClick);
+            var traceText = '', traceSize = '', traceMethod = '';
+            if (trace.name === 'renderComponent') {
+                traceText = capitalize(traceData.type);
+                script = traceData.contentPath || traceData.componentPath;
+            } else if (trace.name === 'renderFilter') {
+                traceText = capitalize(traceData.type);
+                app = traceData.app;
+                script = traceData.name;
+            } else if (trace.name === 'controllerScript') {
+                traceText = 'Script';
+            } else if (trace.name === 'renderApp') {
+                traceText = 'App';
+                app = traceData.app;
+                script = traceData.script || traceData.path;
+            } else if (trace.name === 'websocket') {
+                traceText = 'WS';
+                app = traceData.type;
+                script = traceData.message || '';
+            } else if (traceData.traceName) {
+                traceText = traceData.traceName;
+                script = traceData.url || traceData.path;
+                traceSize = formatSize(traceData.size);
+                traceMethod = traceData.method || '';
+                app = traceData.type;
+            } else if (trace.name.indexOf('.') > 0) {
+                traceText = trace.name.substr(0, trace.name.indexOf('.'));
+                traceMethod = trace.name.substring(trace.name.indexOf('.') + 1);
+                script = traceData.path || traceData.id;
+                if (traceData.query) {
+                    script = traceData.query + ', from=' + traceData.from + ', size=' + traceData.size + ', hits=' + traceData.hits;
+                }
+                if (traceData.parent) {
+                    script = traceData.parent + ', from=' + traceData.from + ', size=' + traceData.size + ', hits=' + traceData.hits;
+                }
+                app = traceData.stack;
+            }
+            var tdArrow = $('<span class="lt-more-icon">&#9654;</span>').css('padding-left', (this.level * 4 ) + 'px');
+            var tdTrace = $('<td>').append(tdArrow).append(document.createTextNode(traceText));
+            if (!trace.children || trace.children.length === 0) {
+                tdArrow.css('visibility', 'hidden');
+            }
+            var tdMethod = $('<td>').text(traceMethod);
+            var tdScriptClass = $('<td>').text(script).css('padding-left', trace.l * 8 + 'px');
+            if (script && script.length > 40) {
+                var tooltip = splitLine(script, 55);
+                new Opentip(tdScriptClass.get(0), tooltip, {style: "tag"});
+            }
+
+            var tdApp = $('<td>').text(app || '');
+            var tdSize = $('<td>').text(traceSize);
+            var tdDuration = $('<td>').text(trace.duration + ' ms');
+            var tdTimeBar = $('<td colspan="4">');
+
+            var offset = new Date(trace.start).getTime() - parentStart.getTime();
+            var offsetWidth = Math.ceil((offset / this.maxDuration) * 100);
+            var barWidth = Math.ceil((trace.duration / this.maxDuration) * 100);
+            var bar = this.makeBar(barWidth, offsetWidth, '', this.level);
+            tdTimeBar.append(bar);
+            tr.append([tdTrace, tdMethod, tdScriptClass, tdApp, tdSize, tdDuration, tdTimeBar]);
+            this.$row = tr;
+        }
+    } // Trace
+
+    var requestConn = null, samplingConn = null, wsAvailable = false;
+    var samplingId, samplingIntervalId = 0, samplingCount = 0;
+    var traceTable = new TraceTable();
     var requestRate = {
         data: null,
         yScale: 10,
@@ -109,7 +573,6 @@ class WebSocketConnection {
     var redrawTimer;
     var timeDurationMode = 'duration';
     var $ltRequestChart = $('.lt-request-chart');
-    var selectedTraceIds = {};
 
     $(function () {
         $('.lt-http-requests').show();
@@ -167,7 +630,7 @@ class WebSocketConnection {
         redrawRequestRateTask();
         window.addEventListener('resize', function (e) {
             initRequestRateData();
-            displayTraceTable();
+            traceTable.display();
         });
     });
 
@@ -203,9 +666,7 @@ class WebSocketConnection {
 
     var startSampling = function () {
         console.log('Start sampling...');
-        sampling.traces = [];
-        sampling.maxDuration = 500;
-        selectedTraceIds = {};
+        traceTable.clear();
 
         $('#startSampling').hide();
         $('#stopSampling').show();
@@ -252,18 +713,14 @@ class WebSocketConnection {
             return;
         }
 
-        var forceRefresh = extractSubtraces(msg.traces);
-
-        sampling.traces = sampling.traces.concat(msg.traces);
-        sampling.maxDuration = Math.max(sampling.maxDuration, msg.maxDuration);
-        sampling.httpFilterMaxDuration = null;
+        traceTable.addTraceData(msg.traces, msg.maxDuration);
 
         $('.lt-http-sampling-message').hide();
         $('.lt-http-requests').show();
         clearInterval(samplingIntervalId);
-        samplingIntervalId = null;
+        samplingIntervalId = 0;
 
-        displayTraceTable(forceRefresh);
+        traceTable.display();
     };
 
     var stopSampling = function () {
@@ -279,210 +736,30 @@ class WebSocketConnection {
     };
 
     var httpApplyUrlFilter = function (e) {
-        sampling.httpFilterUrl = $('#filterUrl').val().trim();
-        displayTraceTable(true);
+        traceTable.setFilterUrl($('#filterUrl').val().trim());
+        traceTable.forceRefresh();
+        traceTable.display();
     };
 
     var httpApplyFilter = function (e) {
         $('.lt-http-toolbar .lt-active').removeClass('lt-active');
         $(this).addClass('lt-active').blur();
 
-        sampling.httpFilterType = e.data.t;
-        sampling.httpFilterUrl = $('#filterUrl').val().trim();
-        displayTraceTable(true);
+        traceTable.setFilterType(e.data.t);
+        traceTable.setFilterUrl($('#filterUrl').val().trim());
+        traceTable.forceRefresh();
+        traceTable.display();
     };
 
     var toggleTime = function (e) {
         timeDurationMode = timeDurationMode === 'duration' ? 'time' : 'duration';
-        displayTraceTable(true);
-    };
-
-    var httpFilters = {
-        'all': null,
-        'page': function (t) {
-            var p = t.data.rawpath || t.data.path;
-            return t.data.type && t.data.type.indexOf('text/html') > -1 && !(p && p.indexOf('/_/') > -1);
-        },
-        'component': function (t) {
-            var p = t.data.rawpath || t.data.path;
-            return p && p.indexOf('/_/component/') > -1;
-        },
-        'service': function (t) {
-            var p = t.data.rawpath || t.data.path;
-            return p && p.indexOf('/_/service/') > -1;
-        },
-        'asset': function (t) {
-            var p = t.data.rawpath || t.data.path;
-            return p && p.indexOf('/_/asset/') > -1;
-        },
-        'image': function (t) {
-            var p = t.data.rawpath || t.data.path;
-            return p && p.indexOf('/_/image/') > -1;
-        },
-        'ws': function (t) {
-            return isWebSocket(t);
-        },
-        'other': function (t) {
-            return !httpFilters.page(t) && !httpFilters.component(t) && !httpFilters.service(t) && !httpFilters.asset(t) &&
-                   !httpFilters.image(t) && !httpFilters.ws(t);
-        }
-    };
-
-    var filterTraces = function (traces) {
-        sampling.httpFilterMaxDuration = null;
-        var f = httpFilters[sampling.httpFilterType];
-        var filterSet = !!f, searchSet = sampling.httpFilterUrl !== '';
-        if (!filterSet && !searchSet) {
-            return traces;
-        }
-
-        var maxDuration = 0;
-
-        traces = traces.filter(function (t) {
-            var r = (!filterSet || f(t)) && (!searchSet || (t.data.path.indexOf(sampling.httpFilterUrl) > -1));
-            if (r && (t.duration > maxDuration)) {
-                maxDuration = t.duration;
-            }
-            return r;
-        });
-
-        sampling.httpFilterMaxDuration = maxDuration;
-
-        return traces;
-    };
-
-    var extractSubtraces = function (traces) {
-        var forceRefresh = false, t, pt, trace, parentTrace;
-        for (t = traces.length - 1; t >= 0; t--) {
-            trace = traces[t];
-            if (trace.data.parentId) {
-                traces.splice(t, 1);
-                forceRefresh = true;
-                for (pt = 0; pt < sampling.traces.length; pt++) {
-                    parentTrace = sampling.traces[pt];
-                    if (parentTrace.id === trace.data.parentId) {
-                        parentTrace.children = (parentTrace.children || []);
-                        parentTrace.children.push(trace);
-                        break;
-                    }
-                }
-                if (trace.children) {
-                    extractSubtraces(trace.children);
-                }
-            }
-        }
-        return forceRefresh;
-    };
-
-    var displayTraceTable = function (forceRefresh) {
-        var traces = filterTraces(sampling.traces);
-        var maxDuration = sampling.httpFilterMaxDuration || sampling.maxDuration;
-        var i, l = traces.length, trace, row, rows = [];
-        if (maxDuration <= 500) {
-            maxDuration = 500;
-        } else {
-            maxDuration = Math.ceil(maxDuration / 1000) * 1000;
-        }
-        setDurationScale(maxDuration);
-
-        Opentip.styles.tag = {
-            showOn: 'mouseover',
-            delay: 0.8
-        };
-        if (forceRefresh) {
-            $('.lt-http-req-table tbody tr').remove();
-        }
-
-        $('.lt-request-label').text(l + ' Requests');
-        var addedRows = $('.lt-http-req-table tbody tr').not('.lt-http-req-details').length;
-        for (i = addedRows; i < l; i++) {
-            trace = traces[i];
-            row = traceToRow(trace, maxDuration).addClass(i % 2 === 0 ? 'lt-even' : 'lt-odd');
-            rows.push(row);
-            if (!!selectedTraceIds[trace.id]) {
-                selectedTraceIds[trace.id] = row;
-            }
-        }
-
-        setTableHeight();
-        $('.lt-http-req-table tbody').append(rows);
-
-        Object.keys(selectedTraceIds).forEach(function (traceId) {
-            selectRow(traceId, selectedTraceIds[traceId]);
-        });
+        traceTable.forceRefresh();
+        traceTable.display();
     };
 
     var setTableHeight = function () {
         var h = $('.lt-http-requests').height();
         $('.lt-http-req-table tbody').css('max-height', (h - 24) + 'px');
-    };
-
-    var traceToRow = function (trace, maxDuration) {
-        var tr = $('<tr>')
-            .on('click', rowClick)
-            .data('t', trace.children)
-            .data('md', maxDuration)
-            .data('s', new Date(trace.start))
-            .data('id', trace.id);
-        var traceData = trace.data || {};
-        var isWS = isWebSocket(trace);
-        var wsStatus = isWS ? getWSStatus(trace) : '';
-
-        var tdArrow = $('<span class="lt-more-icon">&#9654;</span>');
-        var statusText = isWS ? '101' : (traceData.status || '');
-        var tdStatus = $('<td>').append(tdArrow).append(document.createTextNode(statusText));
-        if (!trace.children || trace.children.length === 0) {
-            tdArrow.css('visibility', 'hidden');
-        }
-        var tdMethod = $('<td>').text(traceData.method || '');
-        var tdPath = $('<td>');
-        if (traceData.url) {
-            tdPath.text(traceData.url.substring(traceData.url.indexOf('://') + 3));
-        } else {
-            tdPath.text(traceData.path || '');
-        }
-
-        if (traceData.path && traceData.path.length > 40) {
-            var tooltip = splitLine(traceData.path, 55);
-            new Opentip(tdPath.get(0), tooltip, {style: "tag"});
-        }
-        var tdType = $('<td>');
-        if (isWS) {
-            tdType.text('WebSocket');
-            tdType.toggleClass('lt-ws-open', wsStatus === 'open');
-        } else {
-            tdType.text(traceData.type || '');
-        }
-        var tdSize = $('<td>').text(formatSize(traceData.size));
-        var tdDuration = $('<td>');
-        if (timeDurationMode === 'duration') {
-            tdDuration.text(trace.duration + ' ms');
-        } else {
-            tdDuration.text(formatTimeWithMillis(new Date(trace.start)));
-        }
-        var tdTimeBar = $('<td colspan="4">');
-
-        var barWidth = Math.ceil((trace.duration / maxDuration) * 100);
-        var bar = makeBar(barWidth, 0, traceSpeed(trace.duration));
-        tdTimeBar.append(bar);
-        tr.append([tdStatus, tdMethod, tdPath, tdType, tdSize, tdDuration, tdTimeBar]);
-        return tr;
-    };
-
-    var makeBar = function (widthPercent, offset, clz, level) {
-        var bar = $('<div class="lt-progress-bar horizontal">');
-        var track = $('<div class="lt-progress-track">');
-        var fill = $('<div class="lt-progress-fill">').css('width', widthPercent + '%').addClass(clz);
-        if (level) {
-            fill.addClass('level' + level);
-        }
-        if (offset) {
-            fill.css('left', offset + '%');
-        }
-
-        track.append(fill);
-        bar.append(track);
-        return bar;
     };
 
     var setDurationScale = function (d) {
@@ -504,150 +781,23 @@ class WebSocketConnection {
         return 'slower';
     };
 
-    var formatSize = function (bytes) {
-        if (bytes == undefined) {
-            return '-';
-        }
-        if (bytes == 0) {
-            return '0 B';
-        }
-        var k = 1000,
-            sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-            i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-    };
+    // TODO refactor, formatters by trace.name
+    var formatSubtrace = function (trace) {
+        for (var i = 0, l = subtraceFormatters.length; i < l; i++) {
 
-    var selectRow = function (traceId, $row) {
-        selectedTraceIds[traceId] = $row;
-        if ($row.hasClass('lt-http-sel')) {
-            return;
-        }
-        $row.addClass('lt-http-sel');
-        $row.find('.lt-more-icon').html('&#9660;');
-
-        var subTraces = $row.data('t');
-        if (!subTraces || subTraces.length === 0) {
-            return;
-        }
-        var maxDuration = $row.data('md');
-        var oddEven = $row.hasClass('lt-even') ? 'lt-even' : 'lt-odd';
-        var parentStart = $row.data('s');
-
-        var head = $(
-            '<tr class="lt-http-req-details lt-http-sel lt-sub-header">' +
-            '<td>Trace</td>' +
-            '<td></td>' +
-            '<td>Script / Class</td>' +
-            '<td>Application</td>' +
-            '<td></td>' +
-            '<td></td>' +
-            '<td class="lt-http-req-sub-time" colspan="4">Execution time</td>' +
-            '</tr>')
-            .addClass(oddEven).data('id', traceId);
-
-        var i, l, traces = [], bodyTr, bodyTrs = [head];
-        flattenTraces(subTraces, traces);
-        for (i = 0, l = traces.length; i < l; i++) {
-            bodyTr = subtraceToRow(traces[i], maxDuration, parentStart);
-            bodyTr.addClass(oddEven).addClass('lt-http-sel').data('id', traceId);
-            bodyTrs.push(bodyTr);
-        }
-        $row.after(bodyTrs);
-    };
-
-    var unselectRow = function (traceId, $row) {
-        delete selectedTraceIds[traceId];
-
-        $('.lt-http-req-details').filter(function () {
-            return $(this).data("id") === traceId;
-        }).remove();
-        $row.find('.lt-more-icon').html('&#9654;');
-        $row.removeClass('lt-http-sel');
-    };
-
-    var rowClick = function (e) {
-        var $this = $(this);
-        var traceId = $this.data('id');
-        var wasSelected = !!selectedTraceIds[traceId];
-
-        if (wasSelected) {
-            unselectRow(traceId, $this);
-        } else {
-            selectRow(traceId, $this);
         }
     };
 
-    var flattenTraces = function (traces, res, level) {
-        res = res || [];
-        level = level || 0;
-        for (var i = 0, l = traces.length, tr; i < l; i++) {
-            tr = traces[i];
-            tr.l = level;
-            res.push(tr);
-            if (tr.children) {
-                flattenTraces(tr.children, res, level + 1);
+    var subtraceFormatters = [
+        {
+            match: function (trace) {
+
+            },
+            format: function (trace) {
+
             }
         }
-    };
-
-    var subtraceToRow = function (trace, maxDuration, parentStart) {
-        var traceData = trace.data || {};
-        var script = traceData.script, app = '';
-        if (script) {
-            var p = traceData.script.indexOf(':');
-            if (p > -1) {
-                app = script.substring(0, p);
-                script = script.substring(p + 1);
-            }
-        }
-
-        var tr = $('<tr class="lt-http-req-details">');
-        var traceText = '', traceSize = '', traceMethod = '';
-        if (trace.name === 'renderComponent') {
-            traceText = capitalize(traceData.type);
-            script = traceData.contentPath || traceData.componentPath;
-        } else if (trace.name === 'renderFilter') {
-            traceText = capitalize(traceData.type);
-            app = traceData.app;
-            script = traceData.name;
-        } else if (trace.name === 'controllerScript') {
-            traceText = 'Script';
-        } else if (trace.name === 'renderApp') {
-            traceText = 'App';
-            app = traceData.app;
-            script = traceData.script || traceData.path;
-        } else if (trace.name === 'websocket') {
-            traceText = 'WS';
-            app = traceData.type;
-            script = traceData.message || '';
-        } else if (traceData.traceName) {
-            traceText = traceData.traceName;
-            script = traceData.url || traceData.path;
-            traceSize = formatSize(traceData.size);
-            traceMethod = traceData.method || '';
-            app = traceData.type;
-        }
-        var tdTrace = $('<td>').text(traceText);
-        var tdMethod = $('<td>').text(traceMethod);
-        var tdScriptClass = $('<td>').text(script).css('padding-left', trace.l * 8 + 'px');
-        if (script && script.length > 40) {
-            var tooltip = splitLine(script, 55);
-            new Opentip(tdScriptClass.get(0), tooltip, {style: "tag"});
-        }
-
-        var tdApp = $('<td>').text(app || '');
-        var tdSize = $('<td>').text(traceSize);
-        var tdDuration = $('<td>').text(trace.duration + ' ms');
-        var tdTimeBar = $('<td colspan="4">');
-
-        var offset = new Date(trace.start).getTime() - parentStart.getTime();
-        var offsetWidth = Math.ceil((offset / maxDuration) * 100);
-        var barWidth = Math.ceil((trace.duration / maxDuration) * 100);
-        var bar = makeBar(barWidth, offsetWidth, '', trace.l);
-        tdTimeBar.append(bar);
-        tr.append([tdTrace, tdMethod, tdScriptClass, tdApp, tdSize, tdDuration, tdTimeBar]);
-        return tr;
-    };
+    ];
 
     var capitalize = function (v) {
         return v && v.length ? v.charAt(0).toUpperCase() + v.slice(1) : '';
@@ -719,43 +869,6 @@ class WebSocketConnection {
             barSpacing: 1,
             tooltipSuffix: ' req/sec'
         });
-    };
-
-    var isWebSocket = function (trace) {
-        return !!trace.data.websocket;
-    };
-
-    var getWSStatus = function (trace) {
-        if (!trace.children || trace.children.length === 0) {
-            return '';
-        }
-        var child, status = '';
-        for (var i = 0, l = trace.children.length; i < l; i++) {
-            child = trace.children[i];
-            if (child.name === 'websocket') {
-                if (child.data.type === 'open') {
-                    status = 'open';
-                } else if (child.data.type === 'close') {
-                    status = 'closed';
-                    break;
-                }
-            }
-        }
-        return status;
-    };
-
-    var splitLine = function (text, maxLength) {
-        if (text == null) {
-            return '';
-        }
-        if (text.length <= maxLength) {
-            return text;
-        }
-        var p = text.lastIndexOf('/', maxLength);
-        if (p <= 0 || p > maxLength) {
-            p = maxLength;
-        }
-        return text.slice(0, p) + "\r\n" + splitLine(text.slice(p), maxLength);
     };
 
     var quantityWord = function (value, zero, one, more) {

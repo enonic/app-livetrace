@@ -440,6 +440,11 @@ table.lt-http-req-table tbody tr.lt-even:hover {
 /*background-color: #ecf2f9;*/
 /*}*/
 
+table.lt-http-req-table tbody tr.lt-http-request {
+    font-size: 13px;
+    color: #000f1f;
+}
+
 tr.lt-sub-header {
     font-weight: bold;
 }
@@ -553,13 +558,14 @@ table.lt-http-req-table tbody tr.lt-http-sel {
 }
 
 table.lt-http-req-table tbody tr.lt-http-sel:hover {
-    background-color: #f3f3ff;
+    background-color: #dfdff9;
 }
 
 table.lt-http-req-table td > span.lt-more-icon {
     float: left;
     font-size: 10px;
     color: #808080;
+    margin-right: 2px;
 }
 
 table.lt-http-req-table td.lt-ws-open {
@@ -611,7 +617,11 @@ table.lt-http-req-table td.lt-ws-open {
 }
 
 .horizontal .lt-progress-fill.level4 {
-    background: #1f1f3e;
+    background: #271c3e;
+}
+
+.horizontal .lt-progress-fill.level5 {
+    background: #2c143e;
 }
 
 /* Request Rate Chart */
