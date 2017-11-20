@@ -385,6 +385,7 @@
             tdTimeBar.append(bar);
             tr.append([tdStatus, tdMethod, tdPath, tdType, tdSize, tdDuration, tdTimeBar]);
             this.$row = tr;
+            this.resetExpand();
         }
 
         makeBar(widthPercent, offset, clz, level) {
@@ -403,16 +404,24 @@
             return bar;
         }
 
+        resetExpand() {
+            for (let i = 0; i < this.children.length; i++) {
+                this.children[i].resetExpand();
+                this.expanded = false;
+            }
+        }
+
         rowClick(e) {
             e.preventDefault();
             var self = e.data.self;
             if (self.expanded) {
                 self.unselectRow();
-            } else if (e.shiftKey) {
-                document.getSelection().removeAllRanges();
-                self.expandAll();
             } else {
-                self.selectRow();
+                if (e.shiftKey) {
+                    self.expandAll();
+                } else {
+                    self.selectRow();
+                }
             }
         }
 
@@ -427,6 +436,7 @@
             if (!this.parent) {
                 this.$row.removeClass('lt-http-sel');
             }
+            this.resetExpand();
             this.expanded = false;
         }
 

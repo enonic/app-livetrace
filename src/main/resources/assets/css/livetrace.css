@@ -421,6 +421,11 @@ table.lt-http-req-table thead {
 
 table.lt-http-req-table tbody tr {
     font-size: 12px;
+
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
 }
 
 table.lt-http-req-table tbody tr:hover {
