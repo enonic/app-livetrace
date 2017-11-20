@@ -404,13 +404,16 @@
         }
 
         rowClick(e) {
+            e.preventDefault();
             var self = e.data.self;
             if (self.expanded) {
                 self.unselectRow();
+            } else if (e.shiftKey) {
+                document.getSelection().removeAllRanges();
+                self.expandAll();
             } else {
                 self.selectRow();
             }
-            self.expanded = !self.expanded;
         }
 
         unselectRow() {
@@ -424,9 +427,13 @@
             if (!this.parent) {
                 this.$row.removeClass('lt-http-sel');
             }
+            this.expanded = false;
         }
 
         selectRow() {
+            if (this.expanded) {
+                this.unselectRow();
+            }
             var $row = this.$row;
             $row.addClass('lt-http-sel');
             $row.find('.lt-more-icon').html('&#9660;');
@@ -453,6 +460,12 @@
 
             this.addSubTraces(childrenRows);
             $row.after(childrenRows);
+            this.expanded = true;
+        }
+
+        expandAll() {
+            this.selectRow();
+            this.children.forEach((ch) => ch.expandAll());
         }
 
         removeSubTrace() {
