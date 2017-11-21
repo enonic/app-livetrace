@@ -417,6 +417,10 @@ table.lt-http-req-table thead, table.lt-http-req-table tbody tr {
 
 table.lt-http-req-table thead {
     width: calc(100% - 1em);
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
 }
 
 table.lt-http-req-table tbody tr {
@@ -447,7 +451,12 @@ table.lt-http-req-table tbody tr.lt-even:hover {
 
 table.lt-http-req-table tbody tr.lt-http-request {
     font-size: 13px;
-    color: #000f1f;
+    color: #00427f;
+}
+
+table.lt-http-req-table tbody tr.lt-http-request > td > a {
+    color: #00427f;
+    text-decoration: none;
 }
 
 tr.lt-sub-header {
@@ -456,15 +465,15 @@ tr.lt-sub-header {
 
 /* column widths */
 table.lt-http-req-table th:nth-child(1), table.lt-http-req-table td:nth-child(1) {
-    width: 5%;
+    width: 7%;
 }
 
 table.lt-http-req-table th:nth-child(2), table.lt-http-req-table td:nth-child(2) {
-    width: 5%;
+    width: 7%;
 }
 
 table.lt-http-req-table th:nth-child(3), table.lt-http-req-table td:nth-child(3) {
-    width: 42%;
+    width: 38%;
 }
 
 table.lt-http-req-table th:nth-child(4), table.lt-http-req-table td:nth-child(4) {
@@ -614,19 +623,19 @@ table.lt-http-req-table td.lt-ws-open {
 }
 
 .horizontal .lt-progress-fill.level2 {
-    background: #334074
-}
-
-.horizontal .lt-progress-fill.level3 {
     background: #292952;
 }
 
+.horizontal .lt-progress-fill.level3 {
+    background: #123e3a;
+}
+
 .horizontal .lt-progress-fill.level4 {
-    background: #271c3e;
+    background: #331A48;
 }
 
 .horizontal .lt-progress-fill.level5 {
-    background: #2c143e;
+    background: #751829;
 }
 
 /* Request Rate Chart */

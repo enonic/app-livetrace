@@ -204,6 +204,7 @@
             for (i = addedRows; i < l; i++) {
                 trace = traces[i];
                 trace.initTrace();
+                trace.setMaxDuration(maxDuration);
                 rows.push(trace.$row);
             }
 
@@ -299,6 +300,13 @@
             }
         }
 
+        setMaxDuration(maxDuration) {
+            this.maxDuration = maxDuration;
+            for (let i = 0; i < this.children.length; i++) {
+                this.children[i].setMaxDuration(maxDuration);
+            }
+        }
+
         id() {
             return this.trace.id;
         }
@@ -355,7 +363,8 @@
             var tdMethod = $('<td>').text(traceData.method || '');
             var tdPath = $('<td>');
             if (traceData.url) {
-                tdPath.text(traceData.url.substring(traceData.url.indexOf('://') + 3));
+                var url = traceData.url.substring(traceData.url.indexOf('://') + 3);
+                tdPath.append($('<a target="_blank"/>').attr('href', traceData.url).text(url));
             } else {
                 tdPath.text(traceData.path || '');
             }
@@ -444,14 +453,15 @@
             if (this.expanded) {
                 this.unselectRow();
             }
-            var $row = this.$row;
-            $row.addClass('lt-http-sel');
-            $row.find('.lt-more-icon').html('&#9660;');
-
             var subTraces = this.children;
             if (subTraces.length === 0) {
                 return;
             }
+
+            var $row = this.$row;
+            $row.addClass('lt-http-sel');
+            $row.find('.lt-more-icon').html('&#9660;');
+
 
             var childrenRows = [];
             if (this.level == 0) {
@@ -555,7 +565,7 @@
                 }
                 app = traceData.stack;
             }
-            var tdArrow = $('<span class="lt-more-icon">&#9654;</span>').css('padding-left', (this.level * 4 ) + 'px');
+            var tdArrow = $('<span class="lt-more-icon">&#9654;</span>').css('padding-left', (this.level * 6 ) + 'px');
             var tdTrace = $('<td>').append(tdArrow).append(document.createTextNode(traceText));
             if (!trace.children || trace.children.length === 0) {
                 tdArrow.css('visibility', 'hidden');
