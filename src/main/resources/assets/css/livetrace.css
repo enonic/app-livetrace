@@ -243,8 +243,7 @@ body > .lt-main-container {
 .lt-http-toolbar input {
     height: 24px;
 
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: 4px;
     box-shadow: none;
     box-sizing: content-box;
     border: 1px solid #ccc;
@@ -465,15 +464,15 @@ tr.lt-sub-header {
 
 /* column widths */
 table.lt-http-req-table th:nth-child(1), table.lt-http-req-table td:nth-child(1) {
-    width: 7%;
+    width: 10%;
 }
 
 table.lt-http-req-table th:nth-child(2), table.lt-http-req-table td:nth-child(2) {
-    width: 7%;
+    width: 10%;
 }
 
 table.lt-http-req-table th:nth-child(3), table.lt-http-req-table td:nth-child(3) {
-    width: 38%;
+    width: 32%;
 }
 
 table.lt-http-req-table th:nth-child(4), table.lt-http-req-table td:nth-child(4) {
@@ -636,51 +635,6 @@ table.lt-http-req-table td.lt-ws-open {
 
 .horizontal .lt-progress-fill.level5 {
     background: #751829;
-}
-
-/* Request Rate Chart */
-
-.lt-request-chart-cnt {
-    height: 100px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.lt-request-chart {
-    align-self: flex-start;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-}
-
-.lt-request-rate {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    justify-content: space-between;
-}
-
-.lt-request-rate-current {
-    margin-right: 20px;
-    margin-top: 2px;
-    font-size: 14px;
-    font-family: "Roboto", sans-serif;
-    font-weight: normal;
-    color: #999;
-}
-
-.lt-request-rate-max {
-    margin-left: 10px;
-    margin-top: 2px;
-
-    font-size: 10px;
-    font-family: "Roboto", sans-serif;
-    font-weight: normal;
-    color: #999;
 }
 
 #timeToggle:hover {

@@ -1,4 +1,3 @@
-var portal = require('/lib/xp/portal');
 var traceLib = require('/lib/livetrace');
 var webSocketLib = require('/lib/xp/websocket');
 

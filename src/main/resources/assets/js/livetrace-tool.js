@@ -189,6 +189,7 @@
             } else {
                 maxDuration = Math.ceil(maxDuration / 1000) * 1000;
             }
+            // this.shouldRefresh ?
             setDurationScale(maxDuration);
 
             Opentip.styles.tag = {
@@ -224,7 +225,8 @@
                 'page': function (t) {
                     var tData = t.trace.data;
                     var p = tData.rawpath || tData.path;
-                    return tData.type && tData.type.indexOf('text/html') > -1 && !(p && p.indexOf('/_/') > -1);
+                    return tData.type && tData.type.indexOf('text/html') > -1 && !(p && p.indexOf('/_/') > -1) &&
+                           !(tData.type === 'mapping');
                 },
                 'component': function (t) {
                     var tData = t.trace.data;
@@ -529,22 +531,23 @@
             }
 
             var tr = $('<tr class="lt-http-req-details">').on('click', {self: this}, this.rowClick);
-            var traceText = '', traceSize = '', traceMethod = '';
+            var traceText = trace.name, traceSize = '', traceMethod = '';
             if (trace.name === 'renderComponent') {
-                traceText = capitalize(traceData.type);
+                // traceText = capitalize(traceData.type);
+                traceMethod = traceData.type || '';
                 script = traceData.contentPath || traceData.componentPath;
             } else if (trace.name === 'renderFilter') {
-                traceText = capitalize(traceData.type);
+                // traceText = capitalize(traceData.type);
                 app = traceData.app;
                 script = traceData.name;
             } else if (trace.name === 'controllerScript') {
-                traceText = 'Script';
+                // traceText = 'Script';
             } else if (trace.name === 'renderApp') {
-                traceText = 'App';
+                // traceText = 'App';
                 app = traceData.app;
                 script = traceData.script || traceData.path;
             } else if (trace.name === 'websocket') {
-                traceText = 'WS';
+                // traceText = 'WS';
                 app = traceData.type;
                 script = traceData.message || '';
             } else if (traceData.traceName) {
@@ -557,11 +560,14 @@
                 traceText = trace.name.substr(0, trace.name.indexOf('.'));
                 traceMethod = trace.name.substring(trace.name.indexOf('.') + 1);
                 script = traceData.path || traceData.id;
-                if (traceData.query) {
-                    script = traceData.query + ', from=' + traceData.from + ', size=' + traceData.size + ', hits=' + traceData.hits;
-                }
-                if (traceData.parent) {
-                    script = traceData.parent + ', from=' + traceData.from + ', size=' + traceData.size + ', hits=' + traceData.hits;
+                if (traceData.query || traceData.filter) {
+                    script = ['query=' + traceData.query, 'types=' + traceData.contentTypes, 'filter=' + traceData.filter,
+                        'from=' + traceData.from, 'size=' + traceData.size,
+                        'hits=' + traceData.hits].join(', ');
+                } else if (traceData.parent) {
+                    script =
+                        ['parent=' + traceData.parent, 'from=' + traceData.from, 'size=' + traceData.size, 'hits=' + traceData.hits].join(
+                            ', ');
                 }
                 app = traceData.stack;
             }
@@ -592,20 +598,10 @@
         }
     } // Trace
 
-    var requestConn = null, samplingConn = null, wsAvailable = false;
+    var samplingConn = null, wsAvailable = false;
     var samplingId, samplingIntervalId = 0, samplingCount = 0;
     var traceTable = new TraceTable();
-    var requestRate = {
-        data: null,
-        yScale: 10,
-        rescaleCheck: 0,
-        chartHeight: null,
-        chartBarWidth: null
-    };
-    var REQ_RATE_BAR_COUNT = 20;
-    var redrawTimer;
     var timeDurationMode = 'duration';
-    var $ltRequestChart = $('.lt-request-chart');
 
     $(function () {
         $('.lt-http-requests').show();
@@ -636,10 +632,8 @@
             clearTimeout(typingTimer);
         });
 
-        initRequestRateData();
-        requestConn = new WebSocketConnection(svcUrl + 'sampling');
-        requestConn.onMessage(onRequestMessage);
-        requestConn.onError(() => {
+        var wsTestConn = new WebSocketConnection(svcUrl + 'pingws');
+        wsTestConn.onError(() => {
             checkAuthenticated();
             if (!wsAvailable) {
                 $('.lt-http-trace-websocket-message').show().addClass('shake');
@@ -651,39 +645,25 @@
                 $('#stopSampling').hide();
             }
         });
-        requestConn.onConnect(() => {
-            wsAvailable = true;
-            $('.lt-http-trace-websocket-message').hide();
-            $('.lt-http-requests').show();
-            $('#startSampling').show();
-            $('#stopSampling').hide();
+        wsTestConn.onMessage((msg) => {
+            if (msg.action === 'pong') {
+                wsAvailable = true;
+                $('.lt-http-trace-websocket-message').hide();
+                $('.lt-http-requests').show();
+                $('#startSampling').show();
+                $('#stopSampling').hide();
+            }
         });
-        requestConn.connect();
+        wsTestConn.onConnect(() => {
+            wsAvailable = true;
+            wsTestConn.send({action: 'ping'});
+        });
+        wsTestConn.connect();
 
-        redrawRequestRateTask();
         window.addEventListener('resize', function (e) {
-            initRequestRateData();
             traceTable.display();
         });
     });
-
-    var redrawRequestRateTask = function () {
-        clearTimeout(redrawTimer);
-        redrawTimer = setTimeout(function () {
-            redrawRequestRate();
-            redrawRequestRateTask();
-        }, 1000);
-    };
-
-    var onRequestMessage = function (msg) {
-        if (msg.reqSec != null) {
-            var reqSec = Number(msg.reqSec);
-            handleNewRequestRate(reqSec);
-        } else if (msg.samplingCount) {
-            var count = msg.samplingCount[samplingId];
-            samplingCount = count === undefined ? samplingCount : count;
-        }
-    };
 
     // HTTP
     var checkAuthenticated = function () {
@@ -834,74 +814,6 @@
 
     var capitalize = function (v) {
         return v && v.length ? v.charAt(0).toUpperCase() + v.slice(1) : '';
-    };
-
-    // Request Rate
-    var initRequestRateData = function () {
-        let $chartCnt = $('.lt-request-chart-cnt');
-        var h = $chartCnt.height();
-        $chartCnt.css('min-height', h + 'px');
-
-        var elW = $ltRequestChart.width();
-        requestRate.chartBarWidth = Math.floor((elW - 2) / REQ_RATE_BAR_COUNT) - 1;
-        requestRate.chartHeight = Math.floor(h - 20);
-        if (!requestRate.data) {
-            requestRate.data = [];
-            for (var i = 0; i < REQ_RATE_BAR_COUNT; i++) {
-                requestRate.data.push(0);
-            }
-        }
-        $('.lt-request-rate-max').text(requestRate.yScale + ' r/s');
-    };
-
-    var handleNewRequestRate = function (reqPerSec) {
-        reqPerSec = Math.ceil(reqPerSec);
-        $('.lt-request-rate-current span').text(reqPerSec);
-        // console.log('REQ: ' + reqPerSec);
-        requestRate.data.shift();
-        requestRate.data.push(reqPerSec);
-
-        if (reqPerSec > requestRate.yScale) {
-            requestRate.yScale = reqPerSec + (10 - reqPerSec % 10);
-            $('.lt-request-rate-max').text(requestRate.yScale + ' r/s');
-            console.log('New Req max: ' + requestRate.yScale);
-        } else {
-            checkDownScale();
-        }
-    };
-
-    var checkDownScale = function () {
-        var t = requestRate.rescaleCheck || 0;
-        var n = new Date().getTime();
-        if (n - t > 10000) {
-            var max = 0;
-            for (var i = 0, l = requestRate.data.length; i < l; i++) {
-                if (requestRate.data[i] > max) {
-                    max = requestRate.data[i];
-                }
-            }
-            max = max + (10 - max % 10);
-            if (max < requestRate.yScale) {
-                requestRate.yScale = max;
-                $('.lt-request-rate-max').text(requestRate.yScale + ' r/s');
-                console.log('New Req max: ' + requestRate.yScale);
-            }
-
-            requestRate.rescaleCheck = new Date().getTime();
-        }
-    };
-
-    var redrawRequestRate = function () {
-        var data = requestRate.data;
-        $ltRequestChart.sparkline(data, {
-            type: 'bar',
-            width: '100%',
-            chartRangeMax: requestRate.yScale,
-            height: requestRate.chartHeight,
-            barWidth: requestRate.chartBarWidth,
-            barSpacing: 1,
-            tooltipSuffix: ' req/sec'
-        });
     };
 
     var quantityWord = function (value, zero, one, more) {
