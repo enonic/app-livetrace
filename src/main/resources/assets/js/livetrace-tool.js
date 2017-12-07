@@ -1,6 +1,37 @@
 "use strict";
 (function ($, svcUrl) {
 
+    var splitLine = function (text, maxLength) {
+        if (text == null) {
+            return '';
+        }
+        if (text.length <= maxLength) {
+            return text;
+        }
+        var p = text.lastIndexOf('/', maxLength);
+        if (p <= 0 || p > maxLength) {
+            p = maxLength;
+        }
+        return text.slice(0, p) + "\r\n" + splitLine(text.slice(p), maxLength);
+    };
+
+    var formatSize = function (bytes) {
+        if (bytes == undefined) {
+            return '-';
+        }
+        if (bytes == 0) {
+            return '0 B';
+        }
+        var k = 1000,
+            sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+            i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    };
+
+    var capitalize = function (v) {
+        return v && v.length ? v.charAt(0).toUpperCase() + v.slice(1) : '';
+    };
+
     class WebSocketConnection {
         constructor(url) {
             this.url = this._getWebSocketUrl(url);
@@ -50,7 +81,7 @@
 
         _onWsOpen() {
             console.log('connect WS (' + this.url + ')');
-            this.keepAliveIntervalId = setInterval(function () {
+            this.keepAliveIntervalId = setInterval(() => {
                 if (this.connected) {
                     this.webSocket.send('{"action":"KeepAlive"}');
                 }
@@ -88,34 +119,7 @@
             const l = window.location;
             return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + path;
         }
-    }
-
-    var splitLine = function (text, maxLength) {
-        if (text == null) {
-            return '';
-        }
-        if (text.length <= maxLength) {
-            return text;
-        }
-        var p = text.lastIndexOf('/', maxLength);
-        if (p <= 0 || p > maxLength) {
-            p = maxLength;
-        }
-        return text.slice(0, p) + "\r\n" + splitLine(text.slice(p), maxLength);
-    };
-
-    var formatSize = function (bytes) {
-        if (bytes == undefined) {
-            return '-';
-        }
-        if (bytes == 0) {
-            return '0 B';
-        }
-        var k = 1000,
-            sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-            i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-    };
+    } // class WebSocketConnection
 
     class TraceTable {
         constructor() {
@@ -270,7 +274,7 @@
             var maxDuration = 0;
 
             var self = this;
-            traces = traces.filter(function (t) {
+            traces = traces.filter((t) => {
                 var r = (!filterSet || f(t)) && (!searchSet || (t.path().indexOf(self.httpFilterUrl) > -1));
                 if (r && (t.duration() > maxDuration)) {
                     maxDuration = t.duration();
@@ -283,7 +287,7 @@
             return traces;
         }
 
-    }
+    } // class TraceTable
 
     class Trace {
         constructor(trace, parent, maxDuration, level) {
@@ -571,7 +575,7 @@
                 }
                 app = traceData.stack;
             }
-            var tdArrow = $('<span class="lt-more-icon">&#9654;</span>').css('padding-left', (this.level * 6 ) + 'px');
+            var tdArrow = $('<span class="lt-more-icon">&#9654;</span>').css('padding-left', (this.level * 6) + 'px');
             var tdTrace = $('<td>').append(tdArrow).append(document.createTextNode(traceText));
             if (!trace.children || trace.children.length === 0) {
                 tdArrow.css('visibility', 'hidden');
@@ -596,14 +600,275 @@
             tr.append([tdTrace, tdMethod, tdScriptClass, tdApp, tdSize, tdDuration, tdTimeBar]);
             this.$row = tr;
         }
-    } // Trace
+    } // class Trace
 
+    class Task {
+        constructor(taskJson) {
+            this.table = null;
+            this.id = taskJson.id;
+            this.name = taskJson.name;
+            this.description = taskJson.description;
+            this.state = taskJson.state;
+            this.info = taskJson.progress.info;
+            this.current = taskJson.progress.current;
+            this.total = taskJson.progress.total;
+            this.app = taskJson.application;
+            this.user = this.userText(taskJson.user);
+            this.startTime = new Date(taskJson.startTime);
+            this.$row = null;
+            this.$status = null;
+            this.$statusText = null;
+            this.$description = null;
+            this.$name = null;
+            this.$started = null;
+            this.$app = null;
+            this.$user = null;
+            this.$info = null;
+            this.$progress = null;
+            this.$progressBar = null;
+            this.$progressText = null;
+            this.timerId = null;
+        }
+
+        userText(user) {
+            return user.substring(user.indexOf(":") + 1);
+        }
+
+        createRow() {
+            this.$row = $('<tr/>');
+            this.$statusText = $('<span/>');
+            this.$status = $('<td/>').append(this.$statusText);
+            this.$description = $('<td/>');
+            this.$name = $('<td/>');
+            this.$started = $('<td/>');
+            this.$app = $('<td/>');
+            this.$user = $('<td/>');
+            this.$info = $('<td/>');
+            this.$progress = $('<td/>');
+            this.$progressBar = $('<div class="lt-progress-bar horizontal">');
+            var track = $('<div class="lt-progress-track">');
+            var fill = $('<div class="lt-progress-fill">').css('width', '0%');
+            track.append(fill);
+            this.$progressBar.append(track);
+            this.$progressText = $('<span/>').hide();
+            this.$progress.append(this.$progressBar).append(this.$progressText);
+
+            var $row = $('<tr/>')
+                .append([this.$status, this.$name, this.$description, this.$started, this.$app, this.$user, this.$info, this.$progress]);
+            this.$row = $row;
+            this.refreshDisplay();
+            this.timerId = setInterval(this.refreshTime.bind(this), 2000);
+        }
+
+        getRow() {
+            if (!this.$row) {
+                this.createRow();
+            }
+            return this.$row;
+        }
+
+        refreshTime() {
+            var time = '';
+            if (this.table && this.table.viewTimeHumanized) {
+                time = moment(this.startTime).fromNow();
+            } else {
+                time = moment(this.startTime).format('YYYY-MM-DD HH:mm:ss');
+            }
+            this.$started.text(time);
+        }
+
+        refreshProgress() {
+            if (this.total === 0 || this.table.viewProgressText) {
+                this.$progress.find('span').text(this.total > 0 ? this.current + ' / ' + this.total : '');
+                this.$progressBar.hide();
+                this.$progressText.show();
+            } else {
+                var widthPercent = Math.ceil((this.current / this.total) * 100);
+                this.$progress.find('.lt-progress-fill').css('width', widthPercent + '%');
+                this.$progressBar.show();
+                this.$progressText.hide();
+            }
+        }
+
+        refreshDisplay() {
+            if (!this.$row) {
+                return;
+            }
+            var state = this.state.toLowerCase();
+            this.$statusText.text(capitalize(state)).removeClass().addClass('lt-task-state').addClass('lt-task-state-' + state);
+            this.$name.text(this.name);
+            this.$description.text(this.description);
+            this.refreshTime();
+            this.$app.text(this.app);
+            this.$user.text(this.user);
+            this.$info.text(this.info);
+            this.refreshProgress();
+            // get app icon, displayname
+        }
+
+        remove() {
+            if (this.$row) {
+                this.$row.remove();
+            }
+            clearInterval(this.timerId);
+        }
+
+        updateFrom(task) {
+            this.id = task.id;
+            this.name = task.name;
+            this.description = task.description;
+            this.state = task.state;
+            this.info = task.info;
+            this.current = task.current;
+            this.total = task.total;
+            this.app = task.app;
+            this.user = task.user;
+            this.startTime = task.startTime;
+        }
+    } // class Task
+
+    class TaskTable {
+
+        constructor($table) {
+            this.tasks = {};
+            this.taskIds = [];
+            this.$table = $table;
+            this.$tbody = $table.find('tbody');
+            this.viewTimeHumanized = true;
+            this.viewProgressText = false;
+        }
+
+        setTasks(tasks) {
+            this.tasks = {};
+            this.taskIds = [];
+            var task, i;
+            for (i = 0; i < tasks.length; i++) {
+                task = tasks[i];
+                this.taskIds.push(task.id);
+                this.tasks[task.id] = task;
+                task.table = this;
+            }
+            this.display();
+        }
+
+        updateTask(task) {
+            if (this.taskIds.indexOf(task.id) < 0) {
+                this.tasks[task.id] = task;
+                this.taskIds.push(task.id);
+                task.table = this;
+                this.display();
+
+            } else {
+                var existingTask = this.tasks[task.id];
+                if (existingTask) {
+                    existingTask.updateFrom(task);
+                    existingTask.refreshDisplay();
+                } else {
+                    console.error('Could not find task to update', task);
+                }
+            }
+        }
+
+        removeTask(taskId) {
+            var task = this.tasks[taskId];
+            delete this.tasks[taskId];
+            this.taskIds = this.taskIds.filter((id) => id !== taskId);
+            if (task) {
+                task.remove();
+            }
+        }
+
+        display() {
+            var taskRows = [];
+            var self = this;
+            this.taskIds.forEach((id) => {
+                taskRows.push(self.tasks[id].getRow());
+            });
+
+            this.$tbody.empty().append(taskRows);
+        }
+
+        toggleTimeView() {
+            this.viewTimeHumanized = !this.viewTimeHumanized;
+            var task, i;
+            for (i = 0; i < this.taskIds.length; i++) {
+                task = this.tasks[this.taskIds[i]];
+                task.refreshTime();
+            }
+        }
+
+        toggleProgressView() {
+            this.viewProgressText = !this.viewProgressText;
+            var task, i;
+            for (i = 0; i < this.taskIds.length; i++) {
+                task = this.tasks[this.taskIds[i]];
+                task.refreshProgress();
+            }
+        }
+
+    } // TaskTable
+
+
+    class Tab {
+        constructor(id, tabButId, taskContainerId) {
+            this.id = id;
+            this.$button = $('#' + tabButId);
+            this.$container = $('#' + taskContainerId);
+        }
+
+        select() {
+            this.$button.addClass('lt-tab-selected');
+            this.$container.addClass('lt-tab-container-selected');
+        }
+
+        unselect() {
+            this.$button.removeClass('lt-tab-selected');
+            this.$container.removeClass('lt-tab-container-selected');
+        }
+    }
+
+    class TabManager {
+        constructor() {
+            this.tabs = [];
+            this.tabsById = {};
+        }
+
+        addTab(tab) {
+            this.tabs.push(tab);
+            this.tabsById[tab.id] = tab;
+            const self = this;
+            tab.$button.on('click', () => {
+                self.show(tab.id);
+            });
+        }
+
+        show(tabId) {
+            let tabs = this.tabs, tab;
+            for (let i = 0, l = tabs.length; i < l; i++) {
+                tab = tabs[i];
+                if (tab.id === tabId) {
+                    tab.select();
+                } else {
+                    tab.unselect();
+                }
+            }
+        }
+    }
+
+    var tabMan;
     var samplingConn = null, wsAvailable = false;
     var samplingId, samplingIntervalId = 0, samplingCount = 0;
     var traceTable = new TraceTable();
     var timeDurationMode = 'duration';
+    var taskTable;
 
     $(function () {
+        tabMan = new TabManager();
+        tabMan.addTab(new Tab('dashboard', 'dashboardTabBut', 'dashboardTab'));
+        tabMan.addTab(new Tab('http', 'httpTabBut', 'httpTab'));
+        tabMan.addTab(new Tab('task', 'taskTabBut', 'taskTab'));
+        tabMan.show('task'); // TODO 'http'
+
         $('.lt-http-requests').show();
         $('#startSampling').on('click', startSampling);
         $('#stopSampling').on('click', stopSampling);
@@ -617,6 +882,8 @@
         $('#httpTraceOther').on('click', {t: 'other'}, httpApplyFilter);
         $('#httpTraceWs').on('click', {t: 'ws'}, httpApplyFilter);
         $('#timeToggle').on('click', toggleTime);
+        $('#taskTimeToggle').on('click', taskTimeToggle);
+        $('#taskProgressToggle').on('click', taskProgressToggle);
 
         var typingTimer, doneTypingInterval = 800;
         var searchInput = $('#filterUrl');
@@ -660,17 +927,49 @@
         });
         wsTestConn.connect();
 
+        initTasks();
+
         window.addEventListener('resize', function (e) {
             traceTable.display();
         });
     });
+
+    // TASKS
+    var initTasks = function () {
+        taskTable = new TaskTable($('.lt-task-table'));
+        var wsTaskConn = new WebSocketConnection(svcUrl + 'tasks');
+        wsTaskConn.onMessage(taskInfoReceived);
+        wsTaskConn.connect();
+    };
+
+    var taskInfoReceived = function (msg) {
+        if (msg.tasks) {
+            var tasks = msg.tasks.map((taskJson) => new Task(taskJson));
+            taskTable.setTasks(tasks);
+
+        } else if (msg.task) {
+            var task = new Task(msg.task);
+            taskTable.updateTask(task);
+
+        } else if (msg.taskId) {
+            taskTable.removeTask(msg.taskId);
+        }
+    };
+
+    var taskTimeToggle = function (e) {
+        taskTable.toggleTimeView();
+    };
+
+    var taskProgressToggle = function (e) {
+        taskTable.toggleProgressView();
+    };
 
     // HTTP
     var checkAuthenticated = function () {
         $.ajax({
             url: svcUrl + 'status',
             method: "GET"
-        }).fail(function (jqXHR) {
+        }).fail((jqXHR) => {
             if (jqXHR.status === 401) {
                 location.reload();
             }
@@ -691,7 +990,7 @@
         $('.lt-http-req-table tbody tr').remove();
 
         var samplingStart = new Date();
-        samplingIntervalId = setInterval(function () {
+        samplingIntervalId = setInterval(() => {
             var dif = new Date().getTime() - samplingStart.getTime();
             var seconds = Math.floor(Math.abs(dif / 1000));
             var samplingText = '(' + quantityWord(seconds, '...', '1 second', seconds + ' seconds') +
@@ -811,10 +1110,6 @@
             }
         }
     ];
-
-    var capitalize = function (v) {
-        return v && v.length ? v.charAt(0).toUpperCase() + v.slice(1) : '';
-    };
 
     var quantityWord = function (value, zero, one, more) {
         return value === 0 ? zero : value === 1 ? one : more;

@@ -16,7 +16,7 @@
         <span class="app-title">Live Trace</span>
     </div>
     <div class="lt-appbarmiddle">
-        <button id="startSampling" class="lt-sampling-button lt-button"{{#disabled}} style="display: none;" {{/disabled}}>
+        <button id="startSampling" class="lt-sampling-button lt-button" style="display: none;">
             <span>Start Sampling Data</span>
         </button>
         <button id="stopSampling" class="lt-sampling-stop-button lt-button" style="display: none;">
@@ -27,59 +27,88 @@
 
 <div class="lt-main-container">
     <ul class="lt-tabs">
-        <li class="lt-tab"><a href="#dashboard">Dashboard</a></li>
-        <li class="lt-tab lt-tab-selected"><a href="#http">HTTP</a></li>
-        <li class="lt-tab"><a href="#tasks">Tasks</a></li>
+        <li id="dashboardTabBut" class="lt-tab"><a href="#dashboard">Dashboard</a></li>
+        <li id="httpTabBut" class="lt-tab"><a href="#http">HTTP</a></li>
+        <li id="taskTabBut" class="lt-tab"><a href="#tasks">Tasks</a></li>
     </ul>
-    <!--<div id="httpTab">-->
-    <div class="lt-http-toolbar">
-        <button class="lt-button lt-active" id="httpTraceAll"><span>All</span></button>
-        <button class="lt-button" id="httpTracePage"><span>Page</span></button>
-        <button class="lt-button" id="httpTraceComponent"><span>Component</span></button>
-        <button class="lt-button" id="httpTraceService"><span>Service</span></button>
-        <button class="lt-button" id="httpTraceAsset"><span>Asset</span></button>
-        <button class="lt-button" id="httpTraceImage"><span>Image</span></button>
-        <button class="lt-button" id="httpTraceWs"><span>WebSocket</span></button>
-        <button class="lt-button" id="httpTraceOther"><span>Other</span></button>
+    <div id="httpTab" class="lt-tab-container">
+        <div class="lt-http-toolbar">
+            <button class="lt-button lt-active" id="httpTraceAll"><span>All</span></button>
+            <button class="lt-button" id="httpTracePage"><span>Page</span></button>
+            <button class="lt-button" id="httpTraceComponent"><span>Component</span></button>
+            <button class="lt-button" id="httpTraceService"><span>Service</span></button>
+            <button class="lt-button" id="httpTraceAsset"><span>Asset</span></button>
+            <button class="lt-button" id="httpTraceImage"><span>Image</span></button>
+            <button class="lt-button" id="httpTraceWs"><span>WebSocket</span></button>
+            <button class="lt-button" id="httpTraceOther"><span>Other</span></button>
 
-        <div class="lt-http-toolbar-right">
-            <span class="lt-request-label">0 Requests</span>
-            <input type="search" class="lt-filter-url" placeholder="Filter URL" id="filterUrl"/>
+            <div class="lt-http-toolbar-right">
+                <span class="lt-request-label">0 Requests</span>
+                <input type="search" class="lt-filter-url" placeholder="Filter URL" id="filterUrl"/>
+            </div>
+        </div>
+
+        <div class="lt-panel">
+            <div class="lt-http-trace-warning-message lt-http-trace-websocket-message" style="display: none;">
+                <h2>WebSocket connection failed</h2>
+                <h3>Unable to connect to the server using WebSockets.</h3>
+                <h4>This might be caused by a front-end server not properly configured (e.g. Apache or Nginx).</h4>
+            </div>
+            <div class="lt-http-sampling-message" style="display: none;">
+                <h2>Sampling data</h2>
+                <h3 id="samplingSeconds"></h3>
+            </div>
+            <div class="lt-http-requests" style="display: none;">
+                <table class="lt-http-req-table">
+                    <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Method</th>
+                        <th>Path</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th id="timeToggle">Time</th>
+                        <th id="timecol1">250 ms</th>
+                        <th id="timecol2">500 ms</th>
+                        <th id="timecol3">750 ms</th>
+                        <th id="timecol4">1 s</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="lt-http-panel">
-        <div class="lt-http-trace-warning-message lt-http-trace-websocket-message" style="display: none;">
-            <h2>WebSocket connection failed</h2>
-            <h3>Unable to connect to the server using WebSockets.</h3>
-            <h4>This might be caused by a front-end server not properly configured (e.g. Apache or Nginx).</h4>
-        </div>
-        <div class="lt-http-sampling-message" style="display: none;">
-            <h2>Sampling data</h2>
-            <h3 id="samplingSeconds"></h3>
-        </div>
-        <div class="lt-http-requests" style="display: none;">
-            <table class="lt-http-req-table">
-                <thead>
-                <tr>
-                    <th>Status</th>
-                    <th>Method</th>
-                    <th>Path</th>
-                    <th>Type</th>
-                    <th>Size</th>
-                    <th id="timeToggle">Time</th>
-                    <th id="timecol1">250 ms</th>
-                    <th id="timecol2">500 ms</th>
-                    <th id="timecol3">750 ms</th>
-                    <th id="timecol4">1 s</th>
-                </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+    <div id="taskTab" class="lt-tab-container">
+        <div class="lt-panel">
+            <div class="lt-tasks">
+                <table class="lt-task-table">
+                    <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th id="taskTimeToggle">Started</th>
+                        <th>App</th>
+                        <th>User</th>
+                        <th>Info</th>
+                        <th id="taskProgressToggle">Progress</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    <!--</div>-->
+
+    <div id="dashboardTab" class="lt-tab-container">
+        <div class="lt-panel">
+            <h1>Dashboard</h1>
+        </div>
+    </div>
 </div>
 
 <script type="text/javascript">var CONFIG = {adminUrl: '{{adminUrl}}', portalAssetsUrl: '{{adminUiAssetsUrl}}', appId: 'livetrace'};
@@ -90,6 +119,7 @@ var SVC_URL = '{{svcUrl}}';</script>
 <script type="text/javascript" src="{{assetsUri}}/js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/jquery.sparkline.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/opentip-jquery.min.js"></script>
+<script type="text/javascript" src="{{assetsUri}}/js/moment.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/livetrace-tool.js"></script>
 </body>
 </html>
