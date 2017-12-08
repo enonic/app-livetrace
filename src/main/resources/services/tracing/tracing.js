@@ -37,7 +37,7 @@ var handleWebSocket = function (event) {
 
     case 'message':
         var msg = JSON.parse(event.message);
-        if (msg.action = 'stop') {
+        if (msg.action === 'stop') {
             traceLib.stopSampling(msg.samplingId);
             log.info('Stopped sampling ID: ' + msg.samplingId);
         }
