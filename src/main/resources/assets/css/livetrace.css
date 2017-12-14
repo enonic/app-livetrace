@@ -134,7 +134,7 @@ body > .lt-main-container {
 .lt-tabs {
     display: flex;
     align-content: flex-start;
-    border-bottom: 2px solid #dadfe0;
+    border-bottom: 1px solid #dadfe0;
     list-style-type: none;
     padding: 0;
 
@@ -163,7 +163,7 @@ body > .lt-main-container {
 }
 
 .lt-tab.lt-tab-selected {
-    border-bottom: 2px double #50a8f9;
+    border-bottom: 3px solid #50a8f9;
 }
 
 .lt-tab.lt-tab-selected a {
@@ -171,7 +171,8 @@ body > .lt-main-container {
 }
 
 .lt-tab:not(.lt-tab-selected):hover {
-    border-bottom: 1px dotted rgba(80, 168, 249, 0.69);
+    cursor: pointer;
+    border-bottom: 2px solid rgba(80, 168, 249, 0.69);
 }
 
 .lt-tab:not(.lt-tab-selected):hover a {
@@ -867,4 +868,48 @@ table.lt-task-table td:nth-child(8) {
 .lt-chart-title {
     margin-bottom: 10px;
     padding-left: 20px;
+}
+
+.lt-info-title {
+    margin-bottom: 10px;
+    padding-left: 25px;
+}
+
+.lt-info-container {
+    border: solid 1px #cccccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    -o-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+
+    margin-left: 20px;
+    margin-right: 20px;
+    width: calc(100% - 40px);
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.lt-info-container dl {
+    padding: 0.5em;
+}
+
+.lt-info-container dt {
+    float: left;
+    clear: left;
+    width: 120px;
+    text-align: left;
+    font-weight: bold;
+    color: #4c4c4c;
+}
+
+.lt-info-container dt::after {
+    content: ":";
+}
+
+.lt-info-container dd {
+    margin: 0 0 0 130px;
+    padding: 0 0 0.5em 0;
 }

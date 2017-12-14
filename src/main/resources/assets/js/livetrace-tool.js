@@ -902,6 +902,7 @@
     };
 
     const MAX_POINTS = 50;
+
     class MemoryChart {
         constructor(elementId) {
             this.ctx = document.getElementById(elementId).getContext('2d');
@@ -1245,7 +1246,16 @@
             requestChart.init();
         });
         wsDashboardConn.onMessage((msg) => {
-            // console.log(msg);
+            var node = msg.node;
+            if (node) {
+                $('#nodeName').text(node.nodeName);
+                $('#nodeIsMaster').text(node.nodeIsMaster);
+                $('#nodeXpVersion').text(node.nodeXpVersion);
+                $('#nodeJvm').text(node.nodeJvm);
+                $('#nodeJvmVersion').text(node.nodeJvmVersion);
+                $('#nodeUptime').text(moment.duration(node.nodeUptime).humanize());
+                return;
+            }
             var data = msg.data;
             var t = new Date(data.time * 1000);
 

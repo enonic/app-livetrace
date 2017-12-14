@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import org.osgi.service.component.annotations.Deactivate;
 
+import com.enonic.xp.index.IndexService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.web.thread.ThreadPoolInfo;
@@ -12,7 +13,9 @@ import com.enonic.xp.web.thread.ThreadPoolInfo;
 public class MetricsHandler
     implements ScriptBean
 {
-    private com.enonic.xp.web.thread.ThreadPoolInfo threadPool;
+    private ThreadPoolInfo threadPool;
+
+    private IndexService indexService;
 
     private ConcurrentHashMap<String, MetricsEmitter> emitters;
 
@@ -24,7 +27,7 @@ public class MetricsHandler
     public MetricsEmitter subscribe( final String sessionId, final Consumer<Object> onData )
     {
         return emitters.computeIfAbsent( sessionId, ( sid ) -> {
-            final MetricsEmitter emitter = new MetricsEmitter( sid, threadPool, onData );
+            final MetricsEmitter emitter = new MetricsEmitter( sid, threadPool,this.indexService.isMaster(), onData );
             emitter.start();
             return emitter;
         } );
@@ -49,5 +52,6 @@ public class MetricsHandler
     public void initialize( final BeanContext context )
     {
         this.threadPool = context.getService( ThreadPoolInfo.class ).get();
+        this.indexService = context.getService( IndexService.class ).get();
     }
 }

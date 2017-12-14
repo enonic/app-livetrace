@@ -17,6 +17,7 @@ import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
+import com.enonic.xp.server.ServerInfo;
 import com.enonic.xp.util.Metrics;
 import com.enonic.xp.web.thread.ThreadPoolInfo;
 
@@ -27,6 +28,8 @@ public class MetricsEmitter
 
     private final String sessionId;
 
+    private final boolean isMaster;
+
     private final ThreadPoolInfo threadPool;
 
     private final Consumer<Object> onData;
@@ -35,9 +38,10 @@ public class MetricsEmitter
 
     private long lastReqCount;
 
-    public MetricsEmitter( final String sessionId, final ThreadPoolInfo threadPool, final Consumer<Object> onData )
+    public MetricsEmitter( final String sessionId, final ThreadPoolInfo threadPool, final boolean isMaster, final Consumer<Object> onData )
     {
         this.sessionId = sessionId;
+        this.isMaster = isMaster;
         this.threadPool = threadPool;
         this.onData = onData;
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -45,12 +49,21 @@ public class MetricsEmitter
 
     public void start()
     {
+        sendInitialData();
         scheduler.scheduleAtFixedRate( this::sendData, 0, 3, TimeUnit.SECONDS );
     }
 
     public void stop()
     {
         scheduler.shutdown();
+    }
+
+    private void sendInitialData()
+    {
+        final ServerInfo serverInfo = ServerInfo.get();
+
+        ServerInfoMapper serverInfoMapper = new ServerInfoMapper( serverInfo, isMaster );
+        this.onData.accept( serverInfoMapper );
     }
 
     private void sendData()
