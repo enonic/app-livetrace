@@ -925,7 +925,7 @@
                         lineTension: 0,
                         borderWidth: 2,
                         pointStyle: 'circle',
-                        pointRadius: 3,
+                        pointRadius: 2,
                         pointBorderWidth: 1,
                         pointBackgroundColor: '#2a8ccd',
                     }]
@@ -1002,7 +1002,7 @@
                         lineTension: 0,
                         borderWidth: 2,
                         pointStyle: 'circle',
-                        pointRadius: 3,
+                        pointRadius: 2,
                         pointBorderWidth: 1,
                         pointBackgroundColor: colors.darkBlue.stroke,
                     }]
@@ -1077,6 +1077,7 @@
                             borderColor: colors.green.stroke,
                             pointHighlightStroke: colors.green.stroke,
                             borderCapStyle: 'butt',
+                            pointRadius: 2,
                             lineTension: 0,
                         },
                         {
@@ -1090,6 +1091,7 @@
                             borderColor: colors.purple.stroke,
                             pointHighlightStroke: colors.purple.stroke,
                             borderCapStyle: 'butt',
+                            pointRadius: 2,
                             lineTension: 0,
                         }
                     ]
@@ -1257,7 +1259,10 @@
                 $('#nodeUptime').text(moment.duration(node.nodeUptime).humanize());
 
                 $('#clusterName').text(cluster.clusterName);
-                $('#clusterState').text(cluster.clusterState);
+                $('#clusterState')
+                    .text(cluster.clusterState)
+                    .removeClass()
+                    .addClass('lt-cluster-state-' + cluster.clusterState.toLowerCase());
                 $('#clusterNodes').text(cluster.clusterNodes);
                 return;
             }

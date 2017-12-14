@@ -913,3 +913,15 @@ table.lt-task-table td:nth-child(8) {
     margin: 0 0 0 130px;
     padding: 0 0 0.5em 0;
 }
+
+.lt-cluster-state-yellow {
+    color: #f0a234;
+}
+
+.lt-cluster-state-green {
+    color: #3e9409;
+}
+
+.lt-cluster-state-red {
+    color: #c72808;
+}

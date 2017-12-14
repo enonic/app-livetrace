@@ -37,8 +37,8 @@ public class ServerInfoMapper
 
         gen.map( "cluster" );
         gen.value( "clusterName", clusterInfo.name );
-        gen.value( "clusterState", clusterInfo.memberCount );
-        gen.value( "clusterNodes", clusterInfo.state );
+        gen.value( "clusterNodes", clusterInfo.memberCount );
+        gen.value( "clusterState", clusterInfo.state );
         gen.end();
     }
 
