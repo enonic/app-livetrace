@@ -15,6 +15,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 
 import com.enonic.xp.trace.Trace;
+import com.enonic.xp.trace.TraceEvent;
 import com.enonic.xp.trace.TraceManager;
 
 public final class TraceCollector
@@ -22,6 +23,8 @@ public final class TraceCollector
     private final String id;
 
     private final ListMultimap<String, Trace> traces;
+
+    private final ListMultimap<String, Trace> taskTraces;
 
     private final AtomicInteger requestCount;
 
@@ -37,6 +40,7 @@ public final class TraceCollector
     {
         id = UUID.randomUUID().toString();
         traces = Multimaps.synchronizedListMultimap( ArrayListMultimap.create() );
+        taskTraces = Multimaps.synchronizedListMultimap( ArrayListMultimap.create() );
         requestCount = new AtomicInteger( 0 );
         started = Instant.now();
         scheduler = Executors.newFixedThreadPool( 10 );
@@ -60,8 +64,21 @@ public final class TraceCollector
         traceManager.enable( false );
     }
 
-    public void add( final Trace trace )
+    public void add( final Trace trace, final TraceEvent.Type eventType )
     {
+        if ( trace.getName().equals( "task.run" ) )
+        {
+            if ( eventType == TraceEvent.Type.START )
+            {
+                taskTraces.put( trace.getId(), trace );
+            }
+            else
+            {
+                taskTraces.removeAll( trace.getId() );
+            }
+            return;
+        }
+
         if ( trace.getParentId() != null )
         {
             traces.put( trace.getParentId(), trace );
@@ -71,18 +88,33 @@ public final class TraceCollector
         {
             this.requestCount.incrementAndGet();
         }
-        if ( onTrace != null && trace.getParentId() == null )
+
+        if ( onTrace != null )
         {
-            scheduler.submit( () -> this.sendTraces( trace ) );
+            if ( taskTraces.containsKey( trace.getParentId() ) )
+            {
+                scheduler.submit( () -> this.sendTraces( taskTraces.get( trace.getParentId() ).get( 0 ) ) );
+            }
+            else if ( trace.getParentId() == null )
+            {
+                scheduler.submit( () -> this.sendTraces( trace ) );
+            }
         }
     }
 
     private void sendTraces( final Trace trace )
     {
-        final ArrayList<Trace> traces = new ArrayList<>();
-        traces.add( trace );
-        collectSubTraces( traces, trace );
-        onTrace.accept( new TracesMapper( traces ) );
+        try
+        {
+            final ArrayList<Trace> traces = new ArrayList<>();
+            traces.add( trace );
+            collectSubTraces( traces, trace );
+            onTrace.accept( new TracesMapper( traces ) );
+        }
+        catch ( Throwable t )
+        {
+            t.printStackTrace();
+        }
     }
 
     private void collectSubTraces( final List<Trace> traceList, final Trace parent )

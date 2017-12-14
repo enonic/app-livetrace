@@ -106,7 +106,40 @@
 
     <div id="dashboardTab" class="lt-tab-container">
         <div class="lt-panel">
-            <h1>Dashboard</h1>
+            <div class="lt-dashboard-container">
+                <div class="lt-dashboard-row">
+                    <div class="lt-dashboard-col lt-chart-box">
+                        <h3>Node</h3>
+                    </div>
+                    <div class="lt-dashboard-col lt-chart-box">
+                        <h3>Cluster</h3>
+                    </div>
+                </div>
+                <div class="lt-dashboard-row">
+                    <div class="lt-dashboard-col">
+                        <h5 class="lt-chart-title">JVM Memory</h5>
+                        <div class="lt-dashboard-col lt-chart-container">
+                            <canvas id="ltDashChartMem"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="lt-dashboard-row">
+                    <div class="lt-dashboard-col">
+                        <h5 class="lt-chart-title">Threads</h5>
+                        <div class="lt-dashboard-col lt-chart-container">
+                            <canvas id="ltDashChartThreads"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="lt-dashboard-row">
+                    <div class="lt-dashboard-col">
+                        <h5 class="lt-chart-title">HTTP Requests</h5>
+                        <div class="lt-dashboard-col lt-chart-container">
+                            <canvas id="ltDashChartReq"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -120,6 +153,7 @@ var SVC_URL = '{{svcUrl}}';</script>
 <script type="text/javascript" src="{{assetsUri}}/js/jquery.sparkline.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/opentip-jquery.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/moment.min.js"></script>
+<script type="text/javascript" src="{{assetsUri}}/js/chart.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/livetrace-tool.js"></script>
 </body>
 </html>

@@ -147,6 +147,7 @@
 
         addTraceData(traceElements, maxDuration) {
             this.shouldRefresh = this.extractSubtraces(traceElements, maxDuration);
+            this.shouldRefresh = this.extractTaskTraces(traceElements) || this.shouldRefresh;
 
             this.maxDuration = Math.max(this.maxDuration, maxDuration);
 
@@ -156,7 +157,34 @@
             this.httpFilterMaxDuration = null;
         }
 
+        extractTaskTraces(traces) {
+            var forceRefresh = false, t, pt, trace, parentTrace;
+            for (t = traces.length - 1; t >= 0; t--) {
+                trace = traces[t];
+                if (trace.name === 'task.run') {
+                    for (pt = 0; pt < this.traces.length; pt++) {
+                        parentTrace = this.traces[pt];
+                        if (parentTrace.trace.id === trace.id) {
+                            parentTrace.trace.children = (parentTrace.trace.children || []);
+                            parentTrace.trace.children.push(trace.children || []);
+                            if (trace.children) {
+                                trace.children.forEach(function (ct) {
+                                    parentTrace.children.push(new Trace(ct, parentTrace, parentTrace.maxDuration, parentTrace.level + 1));
+                                });
+                            }
+
+                            traces.splice(t, 1);
+                            forceRefresh = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            return forceRefresh;
+        }
+
         extractSubtraces(traces, maxDuration) {
+            // place traces from websocket requests
             var forceRefresh = false, t, pt, trace, parentTrace;
             for (t = traces.length - 1; t >= 0; t--) {
                 trace = traces[t];
@@ -825,7 +853,7 @@
             this.$button.removeClass('lt-tab-selected');
             this.$container.removeClass('lt-tab-container-selected');
         }
-    }
+    } // Tab
 
     class TabManager {
         constructor() {
@@ -853,7 +881,275 @@
                 }
             }
         }
-    }
+    } // TabManager
+
+    const colors = {
+        green: {
+            fill: '#e0eadf',
+            stroke: '#5eb84d',
+        },
+        lightBlue: {
+            stroke: '#6fccdd',
+        },
+        darkBlue: {
+            fill: '#92bed2',
+            stroke: '#3282bf',
+        },
+        purple: {
+            fill: '#8fa8c8',
+            stroke: '#75539e',
+        },
+    };
+
+    const MAX_POINTS = 50;
+    class MemoryChart {
+        constructor(elementId) {
+            this.ctx = document.getElementById(elementId).getContext('2d');
+            this.chart = null;
+            this.maxPoints = MAX_POINTS;
+        }
+
+        init() {
+            this.chart = new Chart(this.ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Heap memory committed",
+                        data: [],
+                        type: 'line',
+                        borderColor: '#2a8ccd',
+                        backgroundColor: '#e8f4fc',
+                        fill: true,
+                        lineTension: 0,
+                        borderWidth: 2,
+                        pointStyle: 'circle',
+                        pointRadius: 3,
+                        pointBorderWidth: 1,
+                        pointBackgroundColor: '#2a8ccd',
+                    }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            distribution: 'linear', // 'series'
+                            ticks: {
+                                // source: 'labels'
+                            },
+                            time: {
+                                unit: 'second',
+                                displayFormats: {
+                                    second: 'hh:mm:ss'
+                                }
+                            },
+                            gridLines: {
+                                // display:false,
+                                drawOnChartArea: false,
+                                drawTicks: true,
+
+                            }
+                        }],
+                        yAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Memory in MB'
+                            }
+                        }]
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        addPoint(x, y) {
+            let point = {x: x, y: y};
+            var maxPoints = this.maxPoints;
+
+            if (this.chart) {
+                var dataset = this.chart.data.datasets[0];
+                if (dataset.data.length >= maxPoints) {
+                    dataset.data.pop();
+                }
+                dataset.data.push(point);
+                this.chart.update();
+            }
+        }
+
+    } // MemoryChart
+
+    class RequestsChart {
+        constructor(elementId) {
+            this.ctx = document.getElementById(elementId).getContext('2d');
+            this.chart = null;
+            this.maxPoints = MAX_POINTS;
+        }
+
+        init() {
+            this.chart = new Chart(this.ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "HTTP Requests/second",
+                        data: [],
+                        type: 'line',
+                        borderColor: colors.darkBlue.stroke,
+                        backgroundColor: colors.darkBlue.fill,
+                        fill: true,
+                        lineTension: 0,
+                        borderWidth: 2,
+                        pointStyle: 'circle',
+                        pointRadius: 3,
+                        pointBorderWidth: 1,
+                        pointBackgroundColor: colors.darkBlue.stroke,
+                    }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            distribution: 'linear', // 'series'
+                            time: {
+                                unit: 'second',
+                                displayFormats: {
+                                    second: 'hh:mm:ss'
+                                }
+                            },
+                            gridLines: {
+                                // display:false,
+                                drawOnChartArea: false,
+                                drawTicks: true,
+
+                            }
+                        }],
+                        yAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Req/sec'
+                            }
+                        }]
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        addPoint(x, y) {
+            let point = {x: x, y: y};
+            var maxPoints = this.maxPoints;
+
+            if (this.chart) {
+                var dataset = this.chart.data.datasets[0];
+                if (dataset.data.length >= maxPoints) {
+                    dataset.data.pop();
+                }
+                dataset.data.push(point);
+                this.chart.update();
+            }
+        }
+
+    } // RequestsChart
+
+    class ThreadChart {
+        constructor(elementId) {
+            this.ctx = document.getElementById(elementId).getContext('2d');
+            this.chart = null;
+            this.maxPoints = MAX_POINTS;
+        }
+
+        init() {
+            this.chart = new Chart(this.ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: "HTTP Threads",
+                            data: [],
+                            type: 'line',
+                            fill: true,
+                            backgroundColor: colors.green.fill,
+                            pointBackgroundColor: colors.green.stroke,
+                            borderColor: colors.green.stroke,
+                            pointHighlightStroke: colors.green.stroke,
+                            borderCapStyle: 'butt',
+                            lineTension: 0,
+                        },
+                        {
+                            label: "Total Threads",
+                            data: [],
+                            type: 'line',
+
+                            fill: true,
+                            backgroundColor: colors.purple.fill,
+                            pointBackgroundColor: colors.purple.stroke,
+                            borderColor: colors.purple.stroke,
+                            pointHighlightStroke: colors.purple.stroke,
+                            borderCapStyle: 'butt',
+                            lineTension: 0,
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            distribution: 'linear', // 'series'
+                            ticks: {
+                                // source: 'labels'
+                            },
+                            time: {
+                                unit: 'second',
+                                displayFormats: {
+                                    second: 'hh:mm:ss'
+                                }
+                            },
+                            gridLines: {
+                                // display:false,
+                                drawOnChartArea: false,
+                                drawTicks: true,
+
+                            }
+                        }],
+                        yAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: '# threads',
+
+                            },
+                            stacked: true
+                        }]
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        addPoints(x, yPoints) {
+            var maxPoints = this.maxPoints;
+            if (this.chart) {
+                if (this.chart.data.labels.length >= maxPoints) {
+                    this.chart.data.labels.pop();
+                }
+                this.chart.data.labels.push(x);
+
+                for (var p = 0; p < yPoints.length; p++) {
+                    var dataset = this.chart.data.datasets[p];
+
+                    if (dataset.data.length >= maxPoints) {
+                        dataset.data.pop();
+                    }
+                    dataset.data.push(yPoints[p]);
+                }
+                this.chart.update();
+            }
+        }
+
+    } // ThreadChart
 
     var tabMan;
     var samplingConn = null, wsAvailable = false;
@@ -867,7 +1163,7 @@
         tabMan.addTab(new Tab('dashboard', 'dashboardTabBut', 'dashboardTab'));
         tabMan.addTab(new Tab('http', 'httpTabBut', 'httpTab'));
         tabMan.addTab(new Tab('task', 'taskTabBut', 'taskTab'));
-        tabMan.show('task'); // TODO 'http'
+        tabMan.show('dashboard'); // TODO 'http'
 
         $('.lt-http-requests').show();
         $('#startSampling').on('click', startSampling);
@@ -932,7 +1228,38 @@
         window.addEventListener('resize', function (e) {
             traceTable.display();
         });
+
+        initDashboard();
     });
+
+    // DASHBOARD
+    var initDashboard = function () {
+        var memChart = new MemoryChart('ltDashChartMem');
+        var threadChart = new ThreadChart('ltDashChartThreads');
+        var requestChart = new RequestsChart('ltDashChartReq');
+        var wsDashboardConn = new WebSocketConnection(svcUrl + 'dashboard');
+        wsDashboardConn.connect();
+        wsDashboardConn.onConnect(() => {
+            memChart.init();
+            threadChart.init();
+            requestChart.init();
+        });
+        wsDashboardConn.onMessage((msg) => {
+            // console.log(msg);
+            var data = msg.data;
+            var t = new Date(data.time * 1000);
+
+            var heapCommitted = data.heap.committed || 0;
+            var heapCommittedMb = heapCommitted / 1048576;
+            memChart.addPoint(t, heapCommittedMb);
+
+            var reqSec = data.requestRate || 0;
+            requestChart.addPoint(t, reqSec);
+
+            var threads = data.threads;
+            threadChart.addPoints(t, [threads.http, threads.total]);
+        });
+    };
 
     // TASKS
     var initTasks = function () {
@@ -978,6 +1305,7 @@
 
     var startSampling = function () {
         console.log('Start sampling...');
+        tabMan.show('http');
         traceTable.clear();
 
         $('#startSampling').hide();

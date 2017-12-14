@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.primitives.Longs;
 
+import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.trace.Trace;
 import com.enonic.xp.trace.TraceEvent;
 import com.enonic.xp.trace.TraceListener;
@@ -28,9 +29,9 @@ public final class TraceHandler
 {
     private final static Logger LOG = LoggerFactory.getLogger( TraceHandler.class );
 
-    private static final String LIVE_TRACE_APP = "com.enonic.app.livetrace";
+    private final String liveTraceApp;
 
-    private static final String LIVE_TRACE_APP_PREFIX = LIVE_TRACE_APP + ":";
+    private final String liveTraceAppPrefix;
 
     private static final Long DEFAULT_MAX_MINUTES = 10L;
 
@@ -49,6 +50,8 @@ public final class TraceHandler
         collectors = new ConcurrentHashMap<>();
         requestRate = new RequestRate();
         scheduler = Executors.newScheduledThreadPool( 1 );
+        liveTraceApp = ApplicationKey.from( TraceHandler.class ).toString();
+        liveTraceAppPrefix = liveTraceApp + ":";
     }
 
     @Activate
@@ -77,17 +80,17 @@ public final class TraceHandler
     {
         final Trace trace = event.getTrace();
         final TraceEvent.Type eventType = event.getType();
-        if ( eventType != TraceEvent.Type.END )
+        if ( eventType != TraceEvent.Type.END && !trace.getName().equals( "task.run" ) )
         {
             return;
         }
         final String sourceScript = (String) trace.get( "script" );
-        if ( sourceScript != null && sourceScript.startsWith( LIVE_TRACE_APP_PREFIX ) )
+        if ( sourceScript != null && sourceScript.startsWith( liveTraceAppPrefix ) )
         {
             return;
         }
         final String sourceApp = (String) trace.get( "app" );
-        if ( sourceApp != null && sourceApp.equals( LIVE_TRACE_APP ) )
+        if ( sourceApp != null && sourceApp.equals( liveTraceApp ) )
         {
             return;
         }
@@ -96,10 +99,10 @@ public final class TraceHandler
         {
             requestRate.addRequest( trace.getEndTime() );
         }
-        process( trace );
+        process( trace, eventType );
     }
 
-    private void process( final Trace trace )
+    private void process( final Trace trace, final TraceEvent.Type eventType )
     {
         if ( collectors.isEmpty() )
         {
@@ -108,7 +111,7 @@ public final class TraceHandler
 
         for ( TraceCollector collector : collectors.values() )
         {
-            collector.add( trace );
+            collector.add( trace, eventType );
         }
     }
 
@@ -121,16 +124,15 @@ public final class TraceHandler
 
         try
         {
-            collectors.forEach( ( id, collector ) ->
-                                {
-                                    if ( collector.runningLongerThan( maxDuration ) )
-                                    {
-                                        LOG.info( "Stopping event tracing (Sampling ID: " + id + ") running for more than " +
-                                                      maxDuration.toMinutes() + " minutes." );
-                                        unregister( id );
-                                        collector.shutdown();
-                                    }
-                                } );
+            collectors.forEach( ( id, collector ) -> {
+                if ( collector.runningLongerThan( maxDuration ) )
+                {
+                    LOG.info(
+                        "Stopping event tracing (Sampling ID: " + id + ") running for more than " + maxDuration.toMinutes() + " minutes." );
+                    unregister( id );
+                    collector.shutdown();
+                }
+            } );
         }
         catch ( Throwable t )
         {

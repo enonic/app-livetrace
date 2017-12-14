@@ -40,7 +40,7 @@ public final class TracesMapper
         gen.array( "traces" );
         for ( Trace trace : traces )
         {
-            if ( trace.getParentId() == null )
+            if ( trace.getParentId() == null || trace.getName().equals( "trace.run" ) )
             {
                 processChildren( traceChildren, gen, trace );
             }
