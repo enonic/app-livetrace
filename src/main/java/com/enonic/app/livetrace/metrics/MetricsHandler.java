@@ -19,6 +19,8 @@ public class MetricsHandler
 
     private ConcurrentHashMap<String, MetricsEmitter> emitters;
 
+    private ClusterInfoReporter clusterInfoReporter;
+
     public MetricsHandler()
     {
         emitters = new ConcurrentHashMap<>();
@@ -27,7 +29,7 @@ public class MetricsHandler
     public MetricsEmitter subscribe( final String sessionId, final Consumer<Object> onData )
     {
         return emitters.computeIfAbsent( sessionId, ( sid ) -> {
-            final MetricsEmitter emitter = new MetricsEmitter( sid, threadPool,this.indexService.isMaster(), onData );
+            final MetricsEmitter emitter = new MetricsEmitter( sid, threadPool, clusterInfoReporter, onData );
             emitter.start();
             return emitter;
         } );
@@ -53,5 +55,6 @@ public class MetricsHandler
     {
         this.threadPool = context.getService( ThreadPoolInfo.class ).get();
         this.indexService = context.getService( IndexService.class ).get();
+        this.clusterInfoReporter = context.getService( ClusterInfoReporter.class ).get();
     }
 }

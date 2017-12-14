@@ -13,12 +13,12 @@ public class ServerInfoMapper
 {
     private final ServerInfo serverInfo;
 
-    private final boolean isMaster;
+    private final ClusterInfo clusterInfo;
 
-    public ServerInfoMapper( final ServerInfo serverInfo, final boolean isMaster )
+    public ServerInfoMapper( final ServerInfo serverInfo, final ClusterInfo clusterInfo )
     {
         this.serverInfo = serverInfo;
-        this.isMaster = isMaster;
+        this.clusterInfo = clusterInfo;
     }
 
     @Override
@@ -28,11 +28,17 @@ public class ServerInfoMapper
 
         gen.map( "node" );
         gen.value( "nodeName", serverInfo.getName() );
-        gen.value( "nodeIsMaster", isMaster);
+        gen.value( "nodeIsMaster", clusterInfo.isMaster );
         gen.value( "nodeXpVersion", VersionInfo.get().getVersion() );
         gen.value( "nodeJvm", runtimeMXBean.getVmVendor() );
         gen.value( "nodeJvmVersion", runtimeMXBean.getVmVersion() );
         gen.value( "nodeUptime", runtimeMXBean.getUptime() );
+        gen.end();
+
+        gen.map( "cluster" );
+        gen.value( "clusterName", clusterInfo.name );
+        gen.value( "clusterState", clusterInfo.memberCount );
+        gen.value( "clusterNodes", clusterInfo.state );
         gen.end();
     }
 

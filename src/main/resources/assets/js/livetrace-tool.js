@@ -1247,6 +1247,7 @@
         });
         wsDashboardConn.onMessage((msg) => {
             var node = msg.node;
+            var cluster = msg.cluster || {};
             if (node) {
                 $('#nodeName').text(node.nodeName);
                 $('#nodeIsMaster').text(node.nodeIsMaster);
@@ -1254,6 +1255,10 @@
                 $('#nodeJvm').text(node.nodeJvm);
                 $('#nodeJvmVersion').text(node.nodeJvmVersion);
                 $('#nodeUptime').text(moment.duration(node.nodeUptime).humanize());
+
+                $('#clusterName').text(cluster.clusterName);
+                $('#clusterState').text(cluster.clusterState);
+                $('#clusterNodes').text(cluster.clusterNodes);
                 return;
             }
             var data = msg.data;

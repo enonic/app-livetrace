@@ -28,7 +28,7 @@ public class MetricsEmitter
 
     private final String sessionId;
 
-    private final boolean isMaster;
+    private final ClusterInfoReporter clusterInfoReporter;
 
     private final ThreadPoolInfo threadPool;
 
@@ -38,10 +38,11 @@ public class MetricsEmitter
 
     private long lastReqCount;
 
-    public MetricsEmitter( final String sessionId, final ThreadPoolInfo threadPool, final boolean isMaster, final Consumer<Object> onData )
+    public MetricsEmitter( final String sessionId, final ThreadPoolInfo threadPool, final ClusterInfoReporter clusterInfoReporter,
+                           final Consumer<Object> onData )
     {
         this.sessionId = sessionId;
-        this.isMaster = isMaster;
+        this.clusterInfoReporter = clusterInfoReporter;
         this.threadPool = threadPool;
         this.onData = onData;
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -61,8 +62,8 @@ public class MetricsEmitter
     private void sendInitialData()
     {
         final ServerInfo serverInfo = ServerInfo.get();
-
-        ServerInfoMapper serverInfoMapper = new ServerInfoMapper( serverInfo, isMaster );
+        final ClusterInfo clusterInfo = clusterInfoReporter.getInfo();
+        ServerInfoMapper serverInfoMapper = new ServerInfoMapper( serverInfo, clusterInfo );
         this.onData.accept( serverInfoMapper );
     }
 
