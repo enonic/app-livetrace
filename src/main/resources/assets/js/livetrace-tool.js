@@ -871,14 +871,22 @@
         }
 
         show(tabId) {
-            let tabs = this.tabs, tab;
+            let tabs = this.tabs, tab, found = false;
             for (let i = 0, l = tabs.length; i < l; i++) {
                 tab = tabs[i];
                 if (tab.id === tabId) {
                     tab.select();
+                    window.location.hash = '#' + tab.id;
+                    found = true;
                 } else {
                     tab.unselect();
                 }
+            }
+
+            if (!found) {
+                tab = tabs[0];
+                tab.select();
+                window.location.hash = '#' + tab.id;
             }
         }
     } // TabManager
@@ -964,6 +972,9 @@
                             scaleLabel: {
                                 display: true,
                                 labelString: 'Memory in MB'
+                            },
+                            ticks: {
+                                min: 0
                             }
                         }]
                     },
@@ -1008,7 +1019,7 @@
                 data: {
                     labels: [],
                     datasets: [{
-                        label: "HTTP Requests/second",
+                        label: "Requests / Second",
                         data: data,
                         type: 'line',
                         borderColor: colors.darkBlue.stroke,
@@ -1045,6 +1056,9 @@
                             scaleLabel: {
                                 display: true,
                                 labelString: 'Req/sec'
+                            },
+                            ticks: {
+                                min: 0
                             }
                         }]
                     },
@@ -1150,7 +1164,10 @@
                                 labelString: '# threads',
 
                             },
-                            stacked: true
+                            stacked: true,
+                            ticks: {
+                                min: 0
+                            }
                         }]
                     },
                     responsive: true,
@@ -1193,7 +1210,11 @@
         tabMan.addTab(new Tab('dashboard', 'dashboardTabBut', 'dashboardTab'));
         tabMan.addTab(new Tab('http', 'httpTabBut', 'httpTab'));
         tabMan.addTab(new Tab('task', 'taskTabBut', 'taskTab'));
-        tabMan.show('dashboard'); // TODO 'http'
+        var initTab = 'dashboard';
+        if (window.location.hash) {
+            initTab = window.location.hash.substring(1);
+        }
+        tabMan.show(initTab);
 
         $('.lt-http-requests').show();
         $('#startSampling').on('click', startSampling);
