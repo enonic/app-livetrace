@@ -141,7 +141,7 @@ body > .lt-main-container {
     /*position: relative;*/
     /*overflow-x: auto;*/
     /*overflow-y: hidden;*/
-    height: 48px;
+    height: 45px;
     width: 100%;
     background-color: #fff;
     margin: 0 auto;
@@ -413,7 +413,6 @@ table.lt-http-req-table {
 
 table.lt-http-req-table th {
     text-align: center;
-    font-weight: bold;
 }
 
 table.lt-http-req-table tr td {
@@ -489,7 +488,7 @@ table.lt-http-req-table tbody tr.lt-http-request > td > a {
 }
 
 tr.lt-sub-header {
-    font-weight: bold;
+
 }
 
 /* column widths */
@@ -627,7 +626,6 @@ table.lt-task-table {
 
 table.lt-task-table th {
     text-align: center;
-    font-weight: bold;
 }
 
 table.lt-task-table tr td {
@@ -828,6 +826,10 @@ table.lt-task-table td:nth-child(8) {
 
 /* Dashboard */
 
+#dashboardTab {
+    background-color: #f1f1f1;
+}
+
 .lt-dashboard-container {
     display: flex;
     flex-direction: column;
@@ -857,39 +859,53 @@ table.lt-task-table td:nth-child(8) {
 .lt-chart-container {
     width: 100%;
     height: 100%;
-
-    border: solid 1px #cccccc;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-    -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-    -o-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
 }
 
 .lt-chart-title {
     margin-bottom: 10px;
     padding-left: 20px;
+    top: 10px;
+    position: relative;
 }
 
 .lt-info-title {
     margin-bottom: 10px;
     padding-left: 25px;
+    padding-top: 10px;
+
+    width: 90%;
+    border-bottom: 2px solid #e5e5e5;
+    align-self: center;
+    padding-bottom: 5px;
 }
 
 .lt-info-container {
-    border: solid 1px #cccccc;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-    -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-    -o-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-
     margin-left: 20px;
-    margin-right: 20px;
-    width: calc(100% - 40px);
     height: 100%;
 
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+}
+
+.lt-chart-box {
+    width: calc(100% - 40px);
+
+    background-color: #FFFFFF;
+    border: solid 2px #e5e5e5;
+}
+
+.lt-chart-box:nth-child(1) {
+    margin-right: 20px;
+}
+
+.lt-chart-box:nth-child(2) {
+    margin-left: 20px;
+}
+
+.lt-dashboard-col-info-container {
+    background-color: #FFFFFF;
+    border: solid 2px #e5e5e5;
 }
 
 .lt-info-container dl {

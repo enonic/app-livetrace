@@ -902,6 +902,7 @@
     };
 
     const MAX_POINTS = 50;
+    const DATA_INTERVAL_SEC = 3;
 
     class MemoryChart {
         constructor(elementId) {
@@ -911,18 +912,26 @@
         }
 
         init() {
+            var data = [], t = new Date();
+            t.setSeconds(t.getSeconds() - (MAX_POINTS * DATA_INTERVAL_SEC));
+            for (var i = 0; i < MAX_POINTS; i++) {
+                data.push({x: new Date(t.getTime()), y: 0});
+                t.setSeconds(t.getSeconds() + DATA_INTERVAL_SEC);
+            }
+
             this.chart = new Chart(this.ctx, {
                 type: 'bar',
                 data: {
                     labels: [],
                     datasets: [{
                         label: "Heap memory committed",
-                        data: [],
+                        data: data,
                         type: 'line',
                         borderColor: '#2a8ccd',
                         backgroundColor: '#e8f4fc',
                         fill: true,
-                        lineTension: 0,
+                        lineTension: 1,
+                        cubicInterpolationMode: 'monotone',
                         borderWidth: 2,
                         pointStyle: 'circle',
                         pointRadius: 2,
@@ -971,7 +980,7 @@
             if (this.chart) {
                 var dataset = this.chart.data.datasets[0];
                 if (dataset.data.length >= maxPoints) {
-                    dataset.data.pop();
+                    dataset.data.shift();
                 }
                 dataset.data.push(point);
                 this.chart.update();
@@ -988,18 +997,25 @@
         }
 
         init() {
+            var data = [], t = new Date();
+            t.setSeconds(t.getSeconds() - (MAX_POINTS * DATA_INTERVAL_SEC));
+            for (var i = 0; i < MAX_POINTS; i++) {
+                data.push({x: new Date(t.getTime()), y: 0});
+                t.setSeconds(t.getSeconds() + DATA_INTERVAL_SEC);
+            }
             this.chart = new Chart(this.ctx, {
                 type: 'bar',
                 data: {
                     labels: [],
                     datasets: [{
                         label: "HTTP Requests/second",
-                        data: [],
+                        data: data,
                         type: 'line',
                         borderColor: colors.darkBlue.stroke,
                         backgroundColor: colors.darkBlue.fill,
                         fill: true,
-                        lineTension: 0,
+                        lineTension: 1,
+                        cubicInterpolationMode: 'monotone',
                         borderWidth: 2,
                         pointStyle: 'circle',
                         pointRadius: 2,
@@ -1045,7 +1061,7 @@
             if (this.chart) {
                 var dataset = this.chart.data.datasets[0];
                 if (dataset.data.length >= maxPoints) {
-                    dataset.data.pop();
+                    dataset.data.shift();
                 }
                 dataset.data.push(point);
                 this.chart.update();
@@ -1062,14 +1078,23 @@
         }
 
         init() {
+            var data1 = [], data2 = [], labels = [], t = new Date();
+            t.setSeconds(t.getSeconds() - (MAX_POINTS * DATA_INTERVAL_SEC));
+            for (var i = 0; i < MAX_POINTS; i++) {
+                labels.push(new Date(t.getTime()));
+                data1.push(0);
+                data2.push(0);
+                t.setSeconds(t.getSeconds() + DATA_INTERVAL_SEC);
+            }
+
             this.chart = new Chart(this.ctx, {
                 type: 'bar',
                 data: {
-                    labels: [],
+                    labels: labels,
                     datasets: [
                         {
                             label: "HTTP Threads",
-                            data: [],
+                            data: data1,
                             type: 'line',
                             fill: true,
                             backgroundColor: colors.green.fill,
@@ -1078,11 +1103,12 @@
                             pointHighlightStroke: colors.green.stroke,
                             borderCapStyle: 'butt',
                             pointRadius: 2,
-                            lineTension: 0,
+                            lineTension: 1,
+                            cubicInterpolationMode: 'monotone',
                         },
                         {
                             label: "Total Threads",
-                            data: [],
+                            data: data2,
                             type: 'line',
 
                             fill: true,
@@ -1092,7 +1118,8 @@
                             pointHighlightStroke: colors.purple.stroke,
                             borderCapStyle: 'butt',
                             pointRadius: 2,
-                            lineTension: 0,
+                            lineTension: 1,
+                            cubicInterpolationMode: 'monotone',
                         }
                     ]
                 },
@@ -1136,7 +1163,7 @@
             var maxPoints = this.maxPoints;
             if (this.chart) {
                 if (this.chart.data.labels.length >= maxPoints) {
-                    this.chart.data.labels.pop();
+                    this.chart.data.labels.shift();
                 }
                 this.chart.data.labels.push(x);
 
@@ -1144,7 +1171,7 @@
                     var dataset = this.chart.data.datasets[p];
 
                     if (dataset.data.length >= maxPoints) {
-                        dataset.data.pop();
+                        dataset.data.shift();
                     }
                     dataset.data.push(yPoints[p]);
                 }
@@ -1298,9 +1325,10 @@
             var task = new Task(msg.task);
             taskTable.updateTask(task);
 
-        } else if (msg.taskId) {
-            taskTable.removeTask(msg.taskId);
         }
+        /* else if (msg.taskId) {
+                    taskTable.removeTask(msg.taskId);
+                }*/
     };
 
     var taskTimeToggle = function (e) {
