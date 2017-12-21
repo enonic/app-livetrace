@@ -28,10 +28,6 @@
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     };
 
-    var capitalize = function (v) {
-        return v && v.length ? v.charAt(0).toUpperCase() + v.slice(1) : '';
-    };
-
     class WebSocketConnection {
         constructor(url) {
             this.url = this._getWebSocketUrl(url);
@@ -645,18 +641,17 @@
             this.app = taskJson.application;
             this.user = this.userText(taskJson.user);
             this.startTime = new Date(taskJson.startTime);
+            this.endTime = (this.state === 'FINISHED' || this.state === 'FAILED') ? new Date(this.startTime.getTime()) : null;
             this.$row = null;
-            this.$status = null;
-            this.$statusText = null;
             this.$description = null;
             this.$name = null;
-            this.$started = null;
+            this.$runningTime = null;
             this.$app = null;
             this.$user = null;
             this.$info = null;
             this.$progress = null;
+            this.$progressFill = null;
             this.$progressBar = null;
-            this.$progressText = null;
             this.timerId = null;
         }
 
@@ -666,25 +661,20 @@
 
         createRow() {
             this.$row = $('<tr/>');
-            this.$statusText = $('<span/>');
-            this.$status = $('<td/>').append(this.$statusText);
             this.$description = $('<td/>');
             this.$name = $('<td/>');
-            this.$started = $('<td/>');
+            this.$runningTime = $('<td/>');
             this.$app = $('<td/>');
             this.$user = $('<td/>');
-            this.$info = $('<td/>');
             this.$progress = $('<td/>');
             this.$progressBar = $('<div class="lt-progress-bar horizontal">');
             var track = $('<div class="lt-progress-track">');
-            var fill = $('<div class="lt-progress-fill">').css('width', '0%');
-            track.append(fill);
+            this.$progressFill = $('<div class="lt-progress-fill">').css('width', '0%');
+            track.append(this.$progressFill);
             this.$progressBar.append(track);
-            this.$progressText = $('<span/>').hide();
-            this.$progress.append(this.$progressBar).append(this.$progressText);
-
+            this.$progress.append(this.$progressBar);
             var $row = $('<tr/>')
-                .append([this.$status, this.$name, this.$description, this.$started, this.$app, this.$user, this.$info, this.$progress]);
+                .append([this.$name, this.$app, this.$user, this.$description, this.$runningTime, this.$progress]);
             this.$row = $row;
             this.refreshDisplay();
             this.timerId = setInterval(this.refreshTime.bind(this), 2000);
@@ -700,24 +690,18 @@
         refreshTime() {
             var time = '';
             if (this.table && this.table.viewTimeHumanized) {
-                time = moment(this.startTime).fromNow();
+                var endMoment = this.endTime ? moment(this.endTime) : moment();
+                var ms = moment(this.startTime).diff(endMoment);
+                time = humanizeDuration(ms, {units: ['h', 'm', 's'], round: true});
             } else {
                 time = moment(this.startTime).format('YYYY-MM-DD HH:mm:ss');
             }
-            this.$started.text(time);
+            this.$runningTime.text(time);
         }
 
         refreshProgress() {
-            if (this.total === 0 || this.table.viewProgressText) {
-                this.$progress.find('span').text(this.total > 0 ? this.current + ' / ' + this.total : '');
-                this.$progressBar.hide();
-                this.$progressText.show();
-            } else {
-                var widthPercent = Math.ceil((this.current / this.total) * 100);
-                this.$progress.find('.lt-progress-fill').css('width', widthPercent + '%');
-                this.$progressBar.show();
-                this.$progressText.hide();
-            }
+            var widthPercent = this.total <= 0 ? 100 : Math.ceil((this.current / this.total) * 100);
+            this.$progressFill.css('width', widthPercent + '%');
         }
 
         refreshDisplay() {
@@ -725,15 +709,16 @@
                 return;
             }
             var state = this.state.toLowerCase();
-            this.$statusText.text(capitalize(state)).removeClass().addClass('lt-task-state').addClass('lt-task-state-' + state);
+            this.$progressFill.removeClass().addClass('lt-progress-fill').addClass('lt-task-state-' + state);
+            if (state !== 'finished') {
+                this.$progressFill.addClass('lt-progress-striped active');
+            }
             this.$name.text(this.name);
             this.$description.text(this.description);
             this.refreshTime();
             this.$app.text(this.app);
             this.$user.text(this.user);
-            this.$info.text(this.info);
             this.refreshProgress();
-            // get app icon, displayname
         }
 
         remove() {
@@ -744,6 +729,9 @@
         }
 
         updateFrom(task) {
+            if (!this.endTime && (task.state === 'FINISHED' || task.state === 'FAILED')) {
+                this.endTime = new Date();
+            }
             this.id = task.id;
             this.name = task.name;
             this.description = task.description;
@@ -765,7 +753,6 @@
             this.$table = $table;
             this.$tbody = $table.find('tbody');
             this.viewTimeHumanized = true;
-            this.viewProgressText = false;
         }
 
         setTasks(tasks) {
@@ -824,15 +811,6 @@
             for (i = 0; i < this.taskIds.length; i++) {
                 task = this.tasks[this.taskIds[i]];
                 task.refreshTime();
-            }
-        }
-
-        toggleProgressView() {
-            this.viewProgressText = !this.viewProgressText;
-            var task, i;
-            for (i = 0; i < this.taskIds.length; i++) {
-                task = this.tasks[this.taskIds[i]];
-                task.refreshProgress();
             }
         }
 
@@ -1232,7 +1210,6 @@
         $('#httpTraceWs').on('click', {t: 'ws'}, httpApplyFilter);
         $('#timeToggle').on('click', toggleTime);
         $('#taskTimeToggle').on('click', taskTimeToggle);
-        $('#taskProgressToggle').on('click', taskProgressToggle);
 
         var typingTimer, doneTypingInterval = 800;
         var searchInput = $('#filterUrl');
@@ -1356,10 +1333,6 @@
 
     var taskTimeToggle = function (e) {
         taskTable.toggleTimeView();
-    };
-
-    var taskProgressToggle = function (e) {
-        taskTable.toggleProgressView();
     };
 
     // HTTP

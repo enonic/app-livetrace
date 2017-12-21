@@ -60,7 +60,7 @@ body > .lt-main-container {
     -ms-flex-line-pack: stretch;
     align-content: stretch;
     padding: 0 10px 0 15px;
-    background: #333;
+    background-color: #333;
     background-size: cover;
     text-align: center;
     overflow: hidden;
@@ -625,7 +625,7 @@ table.lt-task-table {
 }
 
 table.lt-task-table th {
-    text-align: center;
+    text-align: left;
 }
 
 table.lt-task-table tr td {
@@ -677,36 +677,39 @@ table.lt-task-table tbody tr:hover {
     /*cursor: pointer;*/
 }
 
+/*Name*/
 table.lt-task-table th:nth-child(1), table.lt-task-table td:nth-child(1) {
-    width: 8%;
-}
-
-table.lt-task-table th:nth-child(2), table.lt-task-table td:nth-child(2) {
-    width: 15%;
-}
-
-table.lt-task-table th:nth-child(3), table.lt-task-table td:nth-child(3) {
     width: 20%;
 }
 
+/*App*/
+table.lt-task-table th:nth-child(2), table.lt-task-table td:nth-child(2) {
+    width: 20%;
+}
+
+/*User*/
+table.lt-task-table th:nth-child(3), table.lt-task-table td:nth-child(3) {
+    width: 10%;
+}
+
+/*Description*/
 table.lt-task-table th:nth-child(4), table.lt-task-table td:nth-child(4) {
-    width: 10%;
+    width: 20%;
 }
 
-table.lt-task-table th:nth-child(5), table.lt-task-table td:nth-child(5) {
-    width: 25%;
+/*Time*/
+table.lt-task-table td:nth-child(5) {
+    width: 15%;
 }
 
-table.lt-task-table th:nth-child(6), table.lt-task-table td:nth-child(6) {
-    width: 12%;
+/*Progress*/
+table.lt-task-table td:nth-child(6) {
+    width: 15%;
 }
 
-table.lt-task-table th:nth-child(7), table.lt-task-table td:nth-child(7) {
-    width: 10%;
-}
-
-table.lt-task-table th:nth-child(8), table.lt-task-table td:nth-child(8) {
-    width: 10%;
+/*Progress*/
+table.lt-task-table th:nth-child(5) {
+    width: 30%;
 }
 
 /* column alignments */
@@ -750,20 +753,68 @@ table.lt-task-table td:nth-child(8) {
     padding: 1px 4px;
 }
 
-.lt-task-state-waiting {
-    background-color: #f0a234;
+.horizontal .lt-progress-fill.lt-task-state-waiting {
+    background-color: #f0ad4e;
+    border-radius: 4px;
 }
 
-.lt-task-state-running {
-    background-color: #3e9409;
+.horizontal .lt-progress-fill.lt-task-state-finished {
+    background-color: #5cb85c;
+    border-radius: 4px;
 }
 
-.lt-task-state-finished {
-    background-color: #0077f9;
+.horizontal .lt-progress-fill.lt-task-state-running {
+    background-color: #337ab7;
+    border-radius: 4px;
 }
 
-.lt-task-state-failed {
-    background-color: #c72808;
+.horizontal .lt-progress-fill.lt-task-state-failed {
+    background-color: #d9534f;
+    border-radius: 4px;
+}
+
+.lt-progress-striped {
+    background-image: -webkit-linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+    background-image: -o-linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+    background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+    -webkit-background-size: 40px 40px;
+    background-size: 40px 40px
+}
+
+.lt-progress-striped.active {
+    -webkit-animation: progress-bar-stripes 2s linear infinite;
+    -o-animation: progress-bar-stripes 2s linear infinite;
+    animation: progress-bar-stripes 2s linear infinite
+}
+
+@-webkit-keyframes progress-bar-stripes {
+    from {
+        background-position: 40px 0
+    }
+
+    to {
+        background-position: 0 0
+    }
+}
+
+@-o-keyframes progress-bar-stripes {
+    from {
+        background-position: 40px 0
+    }
+
+    to {
+        background-position: 0 0
+    }
+}
+
+@keyframes progress-bar-stripes {
+    from {
+        background-position: 40px 0
+    }
+
+    to {
+        background-position: 0 0
+    }
 }
 
 /* duration bar */
@@ -771,12 +822,12 @@ table.lt-task-table td:nth-child(8) {
     position: relative;
     width: 100%;
     height: 10px;
-    background: #ebebeb;
+    background-color: #ebebeb;
 }
 
 .horizontal .lt-progress-fill {
     position: relative;
-    background: #50a8f9;
+    background-color: #50a8f9;
     height: 10px;
     width: 50%;
     color: #fff;
@@ -787,38 +838,38 @@ table.lt-task-table td:nth-child(8) {
 }
 
 .horizontal .lt-progress-fill.fast {
-    background: #71bf41;
+    background-color: #71bf41;
 }
 
 .horizontal .lt-progress-fill.slow {
-    background: #f0a234;
+    background-color: #f0a234;
 }
 
 .horizontal .lt-progress-fill.slower {
-    background: #c72808;
+    background-color: #c72808;
 }
 
 .horizontal .lt-progress-fill.level1 {
-    background: #416aac;
+    background-color: #416aac;
 }
 
 .horizontal .lt-progress-fill.level2 {
-    background: #292952;
+    background-color: #292952;
 }
 
 .horizontal .lt-progress-fill.level3 {
-    background: #123e3a;
+    background-color: #123e3a;
 }
 
 .horizontal .lt-progress-fill.level4 {
-    background: #331A48;
+    background-color: #331A48;
 }
 
 .horizontal .lt-progress-fill.level5 {
-    background: #751829;
+    background-color: #751829;
 }
 
-#timeToggle:hover, #taskTimeToggle:hover, #taskProgressToggle:hover {
+#timeToggle:hover, #taskTimeToggle:hover {
     cursor: pointer;
     color: white;
     background-color: #50a8f9;
