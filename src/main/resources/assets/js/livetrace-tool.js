@@ -203,6 +203,8 @@
                     if (trace.children) {
                         this.extractSubtraces(trace.children);
                     }
+                } else if (trace.name !== 'portalRequest') {
+                    traces.splice(t, 1);
                 }
             }
             return forceRefresh;
