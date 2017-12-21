@@ -1260,16 +1260,16 @@
             }
         });
         wsTestConn.onMessage((msg) => {
-            if (msg.action === 'pong') {
+            if (msg.action === 'pong' && !wsAvailable) {
                 wsAvailable = true;
                 $('.lt-http-trace-websocket-message').hide();
                 $('.lt-http-requests').show();
                 $('#startSampling').show();
                 $('#stopSampling').hide();
+                wsTestConn.disconnect();
             }
         });
         wsTestConn.onConnect(() => {
-            wsAvailable = true;
             wsTestConn.send({action: 'ping'});
         });
         wsTestConn.connect();
