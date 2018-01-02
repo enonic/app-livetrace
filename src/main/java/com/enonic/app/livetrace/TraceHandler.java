@@ -35,6 +35,8 @@ public final class TraceHandler
 
     private static final Long DEFAULT_MAX_MINUTES = 10L;
 
+    private static final Long DEFAULT_MAX_REQUESTS = 1_000L;
+
     private final ConcurrentMap<String, TraceCollector> collectors;
 
     private final RequestRate requestRate;
@@ -60,7 +62,7 @@ public final class TraceHandler
         Long timeValue = Longs.tryParse( config.maxTracingTime() );
         timeValue = ( timeValue == null || timeValue < 1 ) ? DEFAULT_MAX_MINUTES : timeValue;
         maxDuration = Duration.ofMinutes( timeValue );
-        autoStopFuture = scheduler.scheduleAtFixedRate( this::autoStop, 0, 30, TimeUnit.SECONDS );
+        autoStopFuture = scheduler.scheduleAtFixedRate( this::autoStop, 0, 10, TimeUnit.SECONDS );
         LOG.info( "Live Trace maximum tracing time is " + timeValue + " minutes." );
     }
 
@@ -129,6 +131,13 @@ public final class TraceHandler
                 {
                     LOG.info(
                         "Stopping event tracing (Sampling ID: " + id + ") running for more than " + maxDuration.toMinutes() + " minutes." );
+                    unregister( id );
+                    collector.shutdown();
+                }
+                else if ( collector.size() >= DEFAULT_MAX_REQUESTS )
+                {
+                    LOG.info(
+                        "Stopping event tracing (Sampling ID: " + id + "), more than " + DEFAULT_MAX_REQUESTS + " requests processed." );
                     unregister( id );
                     collector.shutdown();
                 }

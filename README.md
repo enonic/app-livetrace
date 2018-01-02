@@ -8,7 +8,7 @@ of trace events. This application requires Enonic XP 6.12.x and greater.
 To configure this application create a file named `com.enonic.app.livetrace` in XP configuration directory. 
 The following settings can be specified in the config:
 
-* maxTracingTime: maximum time before tracing is automatically stopped, in minutes. Default is 10. 
+* maxTracingTime: maximum time before tracing is automatically stopped, in minutes. Default is 30.
 
 Example `com.enonic.app.livetrace` file:
 ```
