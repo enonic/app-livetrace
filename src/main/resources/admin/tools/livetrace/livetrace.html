@@ -16,12 +16,16 @@
         <span class="app-title">Live Trace</span>
     </div>
     <div class="lt-appbarmiddle">
-        <button id="startSampling" class="lt-sampling-button lt-button" style="display: none;">
-            <span>Start Sampling Data</span>
-        </button>
-        <button id="stopSampling" class="lt-sampling-stop-button lt-button" style="display: none;">
-            <span>Stop Sampling Data</span>
-        </button>
+        <div class="lt-topbar-middle">
+            <div class="lt-sampling-clear-cnt">
+                <span id="samplingSeconds" style="display: none;"></span>
+            </div>
+            <div class="lt-sampling-clear-cnt">
+                <button id="clearSampling" class="lt-sampling-clear-button lt-button" style="display: none;">
+                    <span>Clear</span>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -54,9 +58,16 @@
                 <h3>Unable to connect to the server using WebSockets.</h3>
                 <h4>This might be caused by a front-end server not properly configured (e.g. Apache or Nginx).</h4>
             </div>
-            <div class="lt-http-sampling-message" style="display: none;">
-                <h2>Sampling data</h2>
-                <h3 id="samplingSeconds"></h3>
+            <div class="lt-http-shader" style="display: none;"></div>
+            <div class="lt-http-sampling" style="display: none;">
+                <div class="lt-http-sampling-buttons">
+                    <button id="startSampling" class="lt-sampling-button lt-button lt-button-shadow" style="display: none;">
+                        <span>Start Sampling Data</span>
+                    </button>
+                    <button id="stopSampling" class="lt-sampling-stop-button lt-button lt-button-shadow" style="display: none;">
+                        <span>Stop Sampling Data</span>
+                    </button>
+                </div>
             </div>
             <div class="lt-http-requests" style="display: none;">
                 <table class="lt-http-req-table">

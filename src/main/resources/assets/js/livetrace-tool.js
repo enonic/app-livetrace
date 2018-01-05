@@ -131,6 +131,7 @@
         clear() {
             this.traces = [];
             this.maxDuration = 500;
+            this.shouldRefresh = true;
         }
 
         setFilterType(filterType) {
@@ -311,6 +312,10 @@
             this.httpFilterMaxDuration = maxDuration;
 
             return traces;
+        }
+
+        count() {
+            return this.traces.length;
         }
 
     } // class TraceTable
@@ -1180,7 +1185,7 @@
 
     var tabMan;
     var samplingConn = null, wsAvailable = false;
-    var samplingId, samplingIntervalId = 0, samplingCount = 0;
+    var samplingId, samplingIntervalId = 0;
     var traceTable = new TraceTable();
     var timeDurationMode = 'duration';
     var taskTable;
@@ -1196,9 +1201,11 @@
         }
         tabMan.show(initTab);
 
-        $('.lt-http-requests').show();
+        $('.lt-http-requests').hide();
+        $('.lt-http-sampling').show();
         $('#startSampling').on('click', startSampling);
         $('#stopSampling').on('click', stopSampling);
+        $('#clearSampling').on('click', clearSampling);
 
         $('#httpTraceAll').on('click', {t: 'all'}, httpApplyFilter);
         $('#httpTracePage').on('click', {t: 'page'}, httpApplyFilter);
@@ -1242,7 +1249,8 @@
             if (msg.action === 'pong' && !wsAvailable) {
                 wsAvailable = true;
                 $('.lt-http-trace-websocket-message').hide();
-                $('.lt-http-requests').show();
+                $('.lt-http-requests').hide();
+                $('.lt-http-sampling').show();
                 $('#startSampling').show();
                 $('#stopSampling').hide();
                 wsTestConn.disconnect();
@@ -1357,32 +1365,36 @@
         $('.lt-request-label').text('');
 
         $('.lt-http-requests').hide();
-        $('.lt-http-sampling-message').show();
+        showSamplingPanel('sampling');
         $('#samplingSeconds').text('...');
         $('.lt-http-req-table tbody tr').remove();
 
-        var samplingStart = new Date();
-        samplingIntervalId = setInterval(() => {
-            var dif = new Date().getTime() - samplingStart.getTime();
-            var seconds = Math.floor(Math.abs(dif / 1000));
-            var samplingText = '(' + quantityWord(seconds, '...', '1 second', seconds + ' seconds') +
-                               ' — ' +
-                               quantityWord(samplingCount, 'No requests yet', '1 request captured', samplingCount + ' requests captured') +
-                               ')';
-            $('#samplingSeconds').text(samplingText);
-        }, 1000);
+        var dotCount = 0;
+        var samplingProgress = () => {
+            var samplingCount = traceTable.count();
 
-        samplingCount = 0;
+            var text = 'Sampling';
+            if (samplingCount > 0) {
+                text += ' — ' + quantityWord(samplingCount, 'No requests yet', '1 request', samplingCount + ' requests');
+            }
+
+            var dots = (dotCount % 3) + 1;
+            text += '.'.repeat(dots) + '\u00A0'.repeat(3 - dots);
+            $('#samplingSeconds').text(text);
+            dotCount++;
+        };
+        samplingProgress();
+        samplingIntervalId = setInterval(samplingProgress, 500);
 
         samplingConn = new WebSocketConnection(svcUrl + 'tracing');
         samplingConn.onMessage(samplingTracesReceived);
         samplingConn.onError(() => {
             checkAuthenticated();
             clearInterval(samplingIntervalId);
+            showSamplingResult();
             $('#stopSampling').hide();
             $('#startSampling').show();
-            $('.lt-http-sampling-message').hide();
-            $('.lt-http-requests').show();
+            showSamplingPanel('clear');
         });
         samplingId = undefined;
         samplingConn.connect();
@@ -1399,10 +1411,7 @@
 
         traceTable.addTraceData(msg.traces, msg.maxDuration);
 
-        $('.lt-http-sampling-message').hide();
-        $('.lt-http-requests').show();
-        clearInterval(samplingIntervalId);
-        samplingIntervalId = 0;
+        showSamplingPanel('sampling');
 
         traceTable.display();
     };
@@ -1411,12 +1420,43 @@
         console.log('Stop sampling...');
         $('#stopSampling').hide();
         $('#startSampling').show();
-        $('.lt-http-sampling-message').hide();
-        $('.lt-http-requests').show();
+        var isEmpty = traceTable.count() === 0;
+
         clearInterval(samplingIntervalId);
+        showSamplingResult();
 
         samplingConn.send({action: 'stop', samplingId: samplingId});
         samplingConn.disconnect();
+
+        if (isEmpty) {
+            showSamplingPanel('clear');
+        } else {
+            showSamplingPanel('sampled');
+        }
+    };
+
+    var showSamplingResult = function () {
+        var samplingCount = traceTable.count();
+        var text = quantityWord(samplingCount, '', '1 request', samplingCount + ' requests') + ' sampled';
+        $('#samplingSeconds').text(text);
+    };
+
+    var clearSampling = function () {
+        console.log('Clear sampling...');
+        $('#clearSampling').hide();
+        $('#startSampling').show();
+        showSamplingPanel('clear');
+
+        traceTable.clear();
+        traceTable.display();
+    };
+
+    var showSamplingPanel = function (status) {
+        $('#samplingSeconds').toggle(status === 'sampling' || status === 'sampled');
+        $('.lt-http-requests').show();
+        $('.lt-http-shader').toggle(status === 'sampling');
+        $('.lt-http-sampling').toggle(status === 'clear' || status === 'sampling');
+        $('#clearSampling').toggle(status === 'sampled');
     };
 
     var httpApplyUrlFilter = function (e) {
