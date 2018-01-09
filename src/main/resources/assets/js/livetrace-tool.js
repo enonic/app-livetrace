@@ -1240,6 +1240,7 @@
         $('#startSampling').on('click', startSampling);
         $('#stopSampling').on('click', stopSampling);
         $('#clearSampling').on('click', clearSampling);
+        $('#samplingSeconds').on('click', () => tabMan.show('http'));
 
         $('#httpTraceAll').on('click', {t: 'all'}, httpApplyFilter);
         $('#httpTracePage').on('click', {t: 'page'}, httpApplyFilter);

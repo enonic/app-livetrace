@@ -330,6 +330,7 @@ body > .lt-main-container {
 
 #samplingSeconds {
     text-transform: none;
+    cursor: pointer;
 }
 
 .lt-http-shader {
