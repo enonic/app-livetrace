@@ -844,6 +844,16 @@
         constructor() {
             this.tabs = [];
             this.tabsById = {};
+            this._onTabShown = null;
+            this._onTabHidden = null;
+        }
+
+        onTabShown(callback) {
+            this._onTabShown = callback;
+        }
+
+        onTabHidden(callback) {
+            this._onTabHidden = callback;
         }
 
         addTab(tab) {
@@ -863,8 +873,22 @@
                     tab.select();
                     window.location.hash = '#' + tab.id;
                     found = true;
+                    if (this._onTabShown) {
+                        try {
+                            this._onTabShown(tab);
+                        } catch (e) {
+                            console.error('Error in onTabShown', e);
+                        }
+                    }
                 } else {
                     tab.unselect();
+                    if (this._onTabHidden) {
+                        try {
+                            this._onTabHidden(tab);
+                        } catch (e) {
+                            console.error('Error in onTabHidden', e);
+                        }
+                    }
                 }
             }
 
@@ -1195,6 +1219,16 @@
         tabMan.addTab(new Tab('dashboard', 'dashboardTabBut', 'dashboardTab'));
         tabMan.addTab(new Tab('http', 'httpTabBut', 'httpTab'));
         tabMan.addTab(new Tab('task', 'taskTabBut', 'taskTab'));
+        tabMan.onTabShown((tab) => {
+            if (tab.id === 'http') {
+                $('#clearSampling').parent().css('visibility', 'visible');
+            }
+        });
+        tabMan.onTabHidden((tab) => {
+            if (tab.id === 'http') {
+                $('#clearSampling').parent().css('visibility', 'hidden');
+            }
+        });
         var initTab = 'dashboard';
         if (window.location.hash) {
             initTab = window.location.hash.substring(1);
