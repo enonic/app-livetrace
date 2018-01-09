@@ -241,7 +241,9 @@
             }
 
             setTableHeight();
-            $('.lt-http-req-table tbody').append(rows);
+            var tbody = $('.lt-http-req-table tbody').append(rows);
+            var tbodyEl = tbody.get(0);
+            tbodyEl.scrollTop = tbodyEl.scrollHeight;
 
             // Object.keys(selectedTraceIds).forEach(function (traceId) {
             //     selectRow(traceId, selectedTraceIds[traceId]);
