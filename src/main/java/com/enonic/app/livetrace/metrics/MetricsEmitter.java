@@ -99,6 +99,8 @@ public class MetricsEmitter
             new MetricsMapper( now, bean, memoryPools, getProcessCpuLoad(), totalThreadCount, httpThreadCount, reqSec );
 
         this.onData.accept( mem );
+
+        lastReqCount++; // increase to count the current WS message sent
     }
 
     private double getProcessCpuLoad()
