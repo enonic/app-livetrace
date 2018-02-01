@@ -5,10 +5,16 @@ image::https://img.shields.io/badge/xp-6.13+-blue.svg[role="right"]
 Live Trace allows *capturing traffic* that is sent to XP and analyzing its performance.
 
 This tool helps *finding bottlenecks* and what is causing them,
-so that the developer can *improve the performance of XP applications*.
+so that a developer can *improve the performance of XP applications*.
 
 
 image::images/lt-http.png[]
+
+== Installation
+
+Live Trace application is available in https://market.enonic.com/applications[Enonic Market].
+
+To install it, open the Applications XP tool and click on the `Install` button. Then select "Live Trace" from the list.
 
 == Dashboard
 
@@ -56,6 +62,10 @@ This in turn allows you to find bottlenecks and improve the performance of your 
 . To start a trace simply select the HTTP tab and click on `"Start Sampling Data"`.
 . The system will start the tracing and any requests received will appear listed in the request table.
 . When you have received enough data, click `"Stop Sampling Data"`.
+
+CAUTION: Tracing has a small but not negligible effect on the performance of the system. Therefore it is not recommended to leave tracing enabled for a long period of time.
+
+TIP: Tracing will stop automatically after a maximum of 1000 requests have been captured, or if the configurable maximum time has passed.
 
 === Request table
 
@@ -105,3 +115,19 @@ The task table has the following columns:
 - `Description`: A description for the task, if specified.
 - `Time`: The total execution time for the task.
 - `Progress`: A progress indicator depending on info reported by the task.
+
+== Configuration
+
+To configure this application create a file named `com.enonic.app.livetrace` in the XP configuration directory.
+
+The following settings can be specified in the config:
+
+- `maxTracingTime`: maximum time before tracing is automatically stopped, in minutes. Default is 30.
+
+
+.Example com.enonic.app.livetrace file
+[source,properties]
+----
+# maximum tracing time 5 minutes
+maxTracingTime=5
+----
