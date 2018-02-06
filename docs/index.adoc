@@ -65,7 +65,7 @@ This in turn allows you to find bottlenecks and improve the performance of your 
 
 CAUTION: Tracing has a small but not negligible effect on the performance of the system. Therefore it is not recommended to leave tracing enabled for a long period of time.
 
-TIP: Tracing will stop automatically after a maximum of 1000 requests have been captured, or if the configurable maximum time has passed.
+TIP: Tracing will stop automatically after a maximum of 1000 requests have been captured, or if the configurable maximum time has passed. See link:#configuration[configuration] below.
 
 === Request table
 
@@ -79,7 +79,7 @@ The table has the following columns:
 - `Size`: Size of the response in bytes.
 - `Time`: Duration of the request handling on the server.
 
-TIP: Click on the `Time` column header to toggle between duration and start time of the request.
+TIP: Click on the `Time` column header to toggle between duration and the start time of the request.
 
 Requests that imply execution of custom code on the server (everything besides _"asset"_ requests) can be expanded to show the sub-steps done as part of the request.
 These sub-steps will show different information depending on the case. Some examples are Page rendering, Part rendering, Content queries, Node queries, HTTP requests (using lib-http-client), etc.
