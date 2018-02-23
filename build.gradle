@@ -29,7 +29,7 @@ dependencies {
     include "com.enonic.lib:lib-http-client:1.0.0"
     include "com.enonic.xp:lib-admin:${xpVersion}"
     include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
-    //include 'com.enonic.lib:license:1.0.0-SNAPSHOT'
+    include 'com.enonic.lib:license:1.0.0-SNAPSHOT'
 }
 
 repositories {

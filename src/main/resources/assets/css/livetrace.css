@@ -120,6 +120,21 @@ body > .lt-main-container {
     justify-content: center;
 }
 
+.lt-topbar-license {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    right: 30px;
+    position: absolute;
+    top: 12px;
+}
+
+.app-bar .lt-topbar-license {
+    text-transform: none;
+    color: ghostwhite;
+}
+
 .lt-sampling-button {
     background-color: #71BF41;
     padding: 14px 19px 14px 19px;
@@ -1034,4 +1049,60 @@ table.lt-task-table td:nth-child(8) {
 
 .lt-cluster-state-red {
     color: #c72808;
+}
+
+.lt-modal-card {
+    background: #fff;
+    border-radius: 5px;
+    width: 640px;
+    position: relative;
+    opacity: .90;
+    transition: all 2s ease-in-out;
+    max-height: calc(100vh - 40px);
+    flex-direction: column;
+    overflow: hidden;
+    display: flex;
+}
+
+.lt-modal-card-body {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.lt-modal-card-header {
+    display: flex;
+    padding: 20px;
+    border-bottom: 1px solid #b5bbbf;
+    align-items: center;
+    background-color: #f5f5f5;
+    flex-shrink: 0;
+}
+
+.lt-modal-card-foot {
+    display: flex;
+    padding: 20px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.lt-upload-button {
+    background-color: #337ab7;
+}
+
+.lt-upload-button:hover {
+    background-color: #3389c6;
+}
+
+.lt-cancel-button {
+    background-color: #999999;
+    margin-left: 20px;
+}
+
+.lt-cancel-button:hover {
+    background-color: #a7a7a7;
+}
+
+#invalidLicenseMessage {
+    color: #a94442;
 }

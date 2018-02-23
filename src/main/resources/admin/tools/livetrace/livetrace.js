@@ -1,9 +1,16 @@
 var mustache = require('/lib/xp/mustache');
 var portalLib = require('/lib/xp/portal');
 var adminLib = require('/lib/xp/admin');
+var licenseLib = require('/lib/license');
 
 exports.get = function (req) {
     var view = resolve('./livetrace.html');
+
+    var licenseDetails = licenseLib.validateLicense({
+        appKey: app.name
+    });
+
+    var licenseText = licenseDetails && !licenseDetails.expired ? 'Licensed to ' + licenseDetails.issuedTo : '';
 
     var svcUrl = portalLib.serviceUrl({service: 'Z'}).slice(0, -1);
     var params = {
@@ -12,7 +19,8 @@ exports.get = function (req) {
         assetsUri: portalLib.assetUrl({path: ""}),
         adminUrl : adminLib.getBaseUri(),
         launcherUrl: portalLib.assetUrl({path: '/js/launcher', application: 'com.enonic.xp.app.main'}),
-        svcUrl: svcUrl
+        svcUrl: svcUrl,
+        licenseText: licenseText
     };
 
     return {

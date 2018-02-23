@@ -1242,7 +1242,16 @@
         $('#startSampling').on('click', startSampling);
         $('#stopSampling').on('click', stopSampling);
         $('#clearSampling').on('click', clearSampling);
+        $('#cancelLicenseModal').on('click', hideLicenseModal);
+        $('#uploadLicense').on('click', uploadLicense);
+        $("#uploadLicenseFile").on("change", sendUploadLicense);
         $('#samplingSeconds').on('click', () => tabMan.show('http'));
+        $(document).keyup(function (e) {
+            if (e.keyCode === 27 && $('#licenseModal').is(':visible')) {
+                hideLicenseModal();
+                e.preventDefault();
+            }
+        });
 
         $('#httpTraceAll').on('click', {t: 'all'}, httpApplyFilter);
         $('#httpTracePage').on('click', {t: 'page'}, httpApplyFilter);
@@ -1392,7 +1401,74 @@
         });
     };
 
+    var checkTracingAllowed = function () {
+        $.ajax({
+            url: svcUrl + 'check',
+            method: "POST"
+        }).then((data) => {
+            if (data.licenseValid) {
+                doStartSampling();
+            } else {
+                showLicenseModal();
+            }
+        }).fail((jqXHR) => {
+            if (jqXHR.status === 401) {
+                location.reload();
+            }
+        });
+    };
+
+    var uploadLicense = function (e) {
+        $('#uploadLicenseFile').trigger('click');
+    };
+
+    var sendUploadLicense = function (e) {
+        var formData = new FormData();
+        formData.append('license', $('#uploadLicenseFile')[0].files[0]);
+
+        $('#invalidLicenseMessage').css('visibility', 'hidden');
+        $.ajax({
+            url: svcUrl + 'uploadLicense',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+        }).then((data) => {
+            console.log(data);
+            if (data.licenseValid) {
+                hideLicenseModal();
+                $('#invalidLicenseMessage').css('visibility', 'hidden');
+            } else {
+                $('#invalidLicenseMessage').css('visibility', 'visible');
+            }
+            $('#uploadLicenseFile').val('');
+        }).fail((jqXHR) => {
+            if (jqXHR.status === 401) {
+                location.reload();
+            }
+            $('#uploadLicenseFile').val('');
+        });
+    };
+
+    var showLicenseModal = function () {
+        $('.lt-http-shader').show();
+        $('#licenseModal').show();
+        $('#startSampling,#stopSampling').hide();
+        $('#invalidLicenseMessage').css('visibility', 'hidden');
+    };
+
+    var hideLicenseModal = function () {
+        $('.lt-http-shader').hide();
+        $('#licenseModal,#stopSampling').hide();
+        $('#startSampling').show();
+        $('#uploadLicenseFile').val('');
+    };
+
     var startSampling = function () {
+        checkTracingAllowed();
+    };
+
+    var doStartSampling = function () {
         console.log('Start sampling...');
         tabMan.show('http');
         traceTable.clear();

@@ -25,6 +25,9 @@
                     <span>Clear</span>
                 </button>
             </div>
+            <!--<div class="lt-topbar-license">-->
+            <!--<span>{{licenseText}}</span>-->
+            <!--</div>-->
         </div>
     </div>
 </div>
@@ -67,6 +70,29 @@
                     <button id="stopSampling" class="lt-sampling-stop-button lt-button lt-button-shadow" style="display: none;">
                         <span>Stop Sampling Data</span>
                     </button>
+                    <div id="licenseModal" class="lt-modal-card" style="display: none;">
+                        <header class="lt-modal-card-header">
+                            <h5>License Check</h5>
+                        </header>
+                        <section class="lt-modal-card-body">
+                            <p>No license found. Please upload your license.</p>
+                            <br/>
+                            <p>Don't have a license? &rarr; <a href="https://enonic.com/contact-us" target="_blank">Contact Enonic</a>.</p>
+                            <br/>
+                            <p id="invalidLicenseMessage" style="visibility: hidden">The license file selected is invalid.</p>
+                        </section>
+                        <footer class="lt-modal-card-foot">
+                            <form action="" method="post" enctype="multipart/form-data">
+                                <input id="uploadLicenseFile" type="file" name="upload" style="opacity: 0;"/>
+                            </form>
+                            <button id="uploadLicense" class="lt-upload-button lt-button lt-button-shadow">
+                                <span>Upload License</span>
+                            </button>
+                            <button id="cancelLicenseModal" class="lt-cancel-button lt-button lt-button-shadow">
+                                <span>Cancel</span>
+                            </button>
+                        </footer>
+                    </div>
                 </div>
             </div>
             <div class="lt-http-requests" style="display: none;">
