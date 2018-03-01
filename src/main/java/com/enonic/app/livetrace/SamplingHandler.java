@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.enonic.lib.license.LicenseDetails;
+import com.enonic.lib.license.LicenseManager;
+import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.script.serializer.MapGenerator;
@@ -18,8 +21,14 @@ public class SamplingHandler
 
     private Supplier<TraceManager> traceManagerSupplier;
 
+    private Supplier<LicenseManager> licenseManagerSupplier;
+
     public String startSampling( final Consumer<Object> onSample )
     {
+        if ( !isValidLicense() )
+        {
+            return null;
+        }
         final TraceManager traceManager = traceManagerSupplier.get();
         if ( !isEnabled() )
         {
@@ -61,10 +70,18 @@ public class SamplingHandler
         return Tracer.isEnabled();
     }
 
+    private boolean isValidLicense()
+    {
+        final LicenseManager licenseManager = licenseManagerSupplier.get();
+        final LicenseDetails licenseDetails = licenseManager.validateLicense( ApplicationKey.from( SamplingHandler.class ).toString() );
+        return licenseDetails != null && !licenseDetails.isExpired();
+    }
+
     @Override
     public void initialize( final BeanContext context )
     {
         traceHandlerSupplier = context.getService( TraceHandler.class );
         traceManagerSupplier = context.getService( TraceManager.class );
+        licenseManagerSupplier = context.getService( LicenseManager.class );
     }
 }

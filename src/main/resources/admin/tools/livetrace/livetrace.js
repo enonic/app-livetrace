@@ -18,7 +18,7 @@ exports.get = function (req) {
         launcherJsUrl: portalLib.assetUrl({path: "/js/launcher.js", application: "com.enonic.xp.admin.ui"}),
         assetsUri: portalLib.assetUrl({path: ""}),
         adminUrl : adminLib.getBaseUri(),
-        launcherUrl: portalLib.assetUrl({path: '/js/launcher', application: 'com.enonic.xp.app.main'}),
+        launcherUrl: adminLib.getLauncherUrl(),
         svcUrl: svcUrl,
         licenseText: licenseText
     };

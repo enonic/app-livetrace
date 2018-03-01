@@ -1419,6 +1419,7 @@
     };
 
     var uploadLicense = function (e) {
+        $('#invalidLicenseMessage').css('visibility', 'hidden');
         $('#uploadLicenseFile').trigger('click');
     };
 
@@ -1518,6 +1519,9 @@
             samplingId = msg.samplingId;
             return
         } else if (msg.action === 'stop') {
+            stopSampling();
+            return;
+        } else if (!msg.traces) {
             stopSampling();
             return;
         }
