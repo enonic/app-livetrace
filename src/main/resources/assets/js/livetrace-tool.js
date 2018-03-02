@@ -1492,13 +1492,13 @@
                 text += ' — ' + quantityWord(samplingCount, 'No requests yet', '1 request', samplingCount + ' requests');
             }
 
-            var dots = (dotCount % 3) + 1;
+            var dots = (dotCount % 4);
             text += '.'.repeat(dots) + '\u00A0'.repeat(3 - dots);
             $('#samplingSeconds').text(text);
             dotCount++;
         };
         samplingProgress();
-        samplingIntervalId = setInterval(samplingProgress, 500);
+        samplingIntervalId = setInterval(samplingProgress, 300);
 
         samplingConn = new WebSocketConnection(svcUrl + 'tracing');
         samplingConn.onMessage(samplingTracesReceived);

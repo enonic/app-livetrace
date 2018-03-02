@@ -18,6 +18,45 @@ body > .lt-main-container {
     height: calc(100% - 44px);
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-weight: normal;
+}
+
+h1 {
+    font-size: 34px;
+    line-height: 40px;
+}
+
+h2 {
+    font-size: 30px;
+    line-height: 40px;
+}
+
+h3 {
+    font-size: 26px;
+    line-height: 40px;
+}
+
+h4 {
+    font-size: 22px;
+    line-height: 20px;
+}
+
+h5 {
+    font-size: 18px;
+    line-height: 20px;
+}
+
+h6 {
+    font-size: 14px;
+    line-height: 16px;
+}
+
+html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, textarea, p, blockquote, th, td {
+    margin: 0;
+    padding: 0;
+}
+
 .app-button {
     height: 44px;
     display: flex;

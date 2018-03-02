@@ -19,7 +19,6 @@ dependencies {
     compile "com.enonic.xp:web-api:${xpVersion}"
     include "com.enonic.xp:lib-content:${xpVersion}"
     include "com.enonic.xp:lib-portal:${xpVersion}"
-    include "com.enonic.xp:lib-thymeleaf:${xpVersion}"
     include "com.enonic.xp:lib-mustache:${xpVersion}"
     include "com.enonic.xp:lib-io:${xpVersion}"
     include "com.enonic.xp:lib-auth:${xpVersion}"
@@ -27,8 +26,6 @@ dependencies {
     include "com.enonic.xp:lib-task:${xpVersion}"
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.lib:lib-http-client:1.0.0"
-    include "com.enonic.xp:lib-admin:${xpVersion}"
-    include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
     include 'com.enonic.lib:license:1.0.0-SNAPSHOT'
 }
 

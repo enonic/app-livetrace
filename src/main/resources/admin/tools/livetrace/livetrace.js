@@ -1,6 +1,5 @@
 var mustache = require('/lib/xp/mustache');
 var portalLib = require('/lib/xp/portal');
-var adminLib = require('/lib/xp/admin');
 var licenseLib = require('/lib/license');
 
 exports.get = function (req) {
@@ -17,8 +16,6 @@ exports.get = function (req) {
         adminUiAssetsUrl: portalLib.assetUrl({path: "", application: "com.enonic.xp.admin.ui"}),
         launcherJsUrl: portalLib.assetUrl({path: "/js/launcher.js", application: "com.enonic.xp.admin.ui"}),
         assetsUri: portalLib.assetUrl({path: ""}),
-        adminUrl : adminLib.getBaseUri(),
-        launcherUrl: adminLib.getLauncherUrl(),
         svcUrl: svcUrl,
         licenseText: licenseText
     };
