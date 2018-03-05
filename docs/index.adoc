@@ -1,7 +1,5 @@
 = Live Trace
 
-image::https://img.shields.io/badge/xp-6.13+-blue.svg[role="right"]
-
 Live Trace allows *capturing traffic* that is sent to XP and analyzing its performance.
 
 This tool helps *finding bottlenecks* and what is causing them,
@@ -15,6 +13,13 @@ image::images/lt-http.png[]
 Live Trace application is available in https://market.enonic.com/applications[Enonic Market].
 
 To install it, open the Applications XP tool and click on the `Install` button. Then select "Live Trace" from the list.
+
+=== License
+
+A license is required to use this application. Once installed, the `Dashboard` and `Tasks` views will be available, but HTTP tracing will be blocked until a license is provided.
+
+You can https://enonic.com/contact-us[contact Enonic] to request a license.
+The license can be installed by starting tracing from the HTTP tab. If there is no license, a pop up message will appear allowing to upload the license file.
 
 == Dashboard
 
@@ -84,7 +89,7 @@ TIP: Click on the `Time` column header to toggle between duration and the start 
 Requests that imply execution of custom code on the server (everything besides _"asset"_ requests) can be expanded to show the sub-steps done as part of the request.
 These sub-steps will show different information depending on the case. Some examples are Page rendering, Part rendering, Content queries, Node queries, HTTP requests (using lib-http-client), etc.
 
-To expand or collapse the request details click on the row. Click and press the Shift key to expand all its contents at once.
+To expand or collapse the request details click on the row. Hold the Shift key and click on the row to expand all its contents at once.
 
 === Request filters
 
@@ -118,14 +123,14 @@ The task table has the following columns:
 
 == Configuration
 
-To configure this application create a file named `com.enonic.app.livetrace` in the XP configuration directory.
+To configure this application create a file named `com.enonic.app.livetrace.cfg` in the XP configuration directory.
 
 The following settings can be specified in the config:
 
 - `maxTracingTime`: maximum time before tracing is automatically stopped, in minutes. Default is 30.
 
 
-.Example com.enonic.app.livetrace file
+.Example com.enonic.app.livetrace.cfg file
 [source,properties]
 ----
 # maximum tracing time 5 minutes
