@@ -19,7 +19,7 @@ To install it, open the Applications XP tool and click on the `Install` button. 
 A license is required to use this application. Once installed, the `Dashboard` and `Tasks` views will be available, but HTTP tracing will be blocked until a license is provided.
 
 You can https://enonic.com/contact-us[contact Enonic] to request a license.
-The license can be installed by starting tracing from the HTTP tab. If there is no license, a pop up message will appear allowing to upload the license file.
+The license can be installed by starting tracing from the HTTP tab. If a valid license is not found in the system, a pop up message will appear allowing to upload the license file.
 
 == Dashboard
 
