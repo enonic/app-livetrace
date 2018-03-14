@@ -1536,7 +1536,6 @@
     var stopSampling = function () {
         console.log('Stop sampling...');
         $('#stopSampling').hide();
-        $('#startSampling').show();
         var isEmpty = traceTable.count() === 0;
 
         clearInterval(samplingIntervalId);
@@ -1546,6 +1545,7 @@
         samplingConn.disconnect();
 
         if (isEmpty) {
+            $('#startSampling').show();
             showSamplingPanel('clear');
         } else {
             showSamplingPanel('sampled');
