@@ -2,8 +2,8 @@
 
 <img align="right" alt="Live Trace Logo" width="128" src="./src/main/resources/application.svg">
 
-This application listens to trace events and record the events in a searchable index. Can be set up to record maximum number
-of trace events. This application requires Enonic XP 6.12.x and greater.
+Live Trace allows *capturing traffic* that is sent to XP to analyze and improve its performance. 
+This application requires Enonic XP 6.12.x or higher.
 
 ## Building and deploying
 
