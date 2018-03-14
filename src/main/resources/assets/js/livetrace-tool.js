@@ -1506,9 +1506,14 @@
             checkAuthenticated();
             clearInterval(samplingIntervalId);
             showSamplingResult();
-            $('#stopSampling').hide();
-            $('#startSampling').show();
-            showSamplingPanel('clear');
+
+            var isEmpty = traceTable.count() === 0;
+            if (isEmpty) {
+                $('#startSampling').show();
+                showSamplingPanel('clear');
+            } else {
+                showSamplingPanel('sampled');
+            }
         });
         samplingId = undefined;
         samplingConn.connect();
