@@ -3,15 +3,17 @@
 This application listens to trace events and record the events in a searchable index. Can be set up to record maximum number
 of trace events. This application requires Enonic XP 6.12.x and greater.
 
-## Configuration
+## Building and deploying
 
-To configure this application create a file named `com.enonic.app.livetrace` in XP configuration directory. 
-The following settings can be specified in the config:
+Build this application from the command line. Go to the root of the project and enter:
 
-* maxTracingTime: maximum time before tracing is automatically stopped, in minutes. Default is 30.
+    ./gradlew clean build
 
-Example `com.enonic.app.livetrace` file:
-```
-# maximum tracing time 5 minutes
-maxTracingTime=5
-```
+To deploy the app, set `$XP_HOME` environment variable and enter:
+
+    ./gradlew deploy
+
+
+## Documentation
+
+[See documentation here.](https://github.com/enonic/app-livetrace/blob/master/docs/index.adoc)
