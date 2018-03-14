@@ -1,4 +1,6 @@
-# Livetrace application for Enonic XP
+# Live Trace application for Enonic XP
+
+<img align="right" alt="Live Trace Logo" width="128" src="./src/main/resources/application.svg">
 
 This application listens to trace events and record the events in a searchable index. Can be set up to record maximum number
 of trace events. This application requires Enonic XP 6.12.x and greater.
