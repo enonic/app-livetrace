@@ -4,6 +4,9 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <title>Live Trace</title>
+    <link rel="stylesheet" type="text/css" href="{{assetsUri}}/admin/common/styles/_all.css">
+    <script type="text/javascript" src="{{assetsUri}}/admin/common/lib/_all.js"></script>
+
     <link rel="stylesheet" type="text/css" href="{{assetsUri}}/css/livetrace.css">
     <link rel="stylesheet" type="text/css" href="{{assetsUri}}/css/opentip.css">
     <link rel="shortcut icon" href="{{assetsUri}}/img/livetrace.png">
@@ -221,5 +224,16 @@
 <script type="text/javascript" src="{{assetsUri}}/js/humanize-duration.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/chart.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/livetrace-tool.js"></script>
+
+<script>
+    var CONFIG = {
+        adminUrl: '{{adminUrl}}',
+        appId: 'toolstarter',
+        launcherUrl: '{{launcherUrl}}'
+    };
+</script>
+<script type="text/javascript" src="{{assetsUri}}/admin/common/js/_all.js"></script>
+<script type="text/javascript" src="{{launcherPath}}" async></script>
+
 </body>
 </html>

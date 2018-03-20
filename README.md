@@ -4,7 +4,7 @@
 
 Live Trace allows *capturing traffic* that is sent to XP to analyze and improve its performance. 
 
-This application requires Enonic XP 6.12.x or higher.
+This application requires Enonic XP 6.14.x or higher.
 
 ## Building and deploying
 
