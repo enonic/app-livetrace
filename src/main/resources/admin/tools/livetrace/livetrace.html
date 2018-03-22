@@ -28,7 +28,7 @@
                 </button>
             </div>
             <div class="lt-topbar-license">
-                <span>{{licenseText}}</span>
+                <span id="licenseText">{{licenseText}}</span>
             </div>
         </div>
     </div>
@@ -91,6 +91,25 @@
                                 <span>Upload License</span>
                             </button>
                             <button id="cancelLicenseModal" class="lt-cancel-button lt-button lt-button-shadow">
+                                <span>Cancel</span>
+                            </button>
+                        </footer>
+                    </div>
+                    <div id="licenseInfoModal" class="lt-modal-card" style="display: none;">
+                        <header class="lt-modal-card-header">
+                            <h5>License</h5>
+                        </header>
+                        <section class="lt-modal-card-body">
+                            <p>No license found. Please upload your license.</p>
+                            <br/>
+                            <p>Don't have a license? &rarr; <a href="https://enonic.com/contact-us" target="_blank">Contact Enonic</a>.</p>
+                            <br/>
+                        </section>
+                        <footer class="lt-modal-card-foot">
+                            <button id="removeLicense" class="lt-upload-button lt-button lt-button-shadow">
+                                <span>Remove License</span>
+                            </button>
+                            <button id="cancelLicenseInfoModal" class="lt-cancel-button lt-button lt-button-shadow">
                                 <span>Cancel</span>
                             </button>
                         </footer>

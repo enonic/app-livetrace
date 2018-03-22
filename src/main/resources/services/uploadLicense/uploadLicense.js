@@ -22,7 +22,8 @@ exports.post = function (req) {
         status: 200,
         contentType: 'application/json',
         body: {
-            licenseValid: !!isValid
+            licenseValid: !!isValid,
+            licenseText: isValid ? 'Licensed to ' + licenseDetails.issuedTo : null
         }
     };
 };

@@ -1244,7 +1244,8 @@
         $('#clearSampling').on('click', clearSampling);
         $('#cancelLicenseModal').on('click', hideLicenseModal);
         $('#uploadLicense').on('click', uploadLicense);
-        $("#uploadLicenseFile").on("change", sendUploadLicense);
+        $('#uploadLicenseFile').on('change', sendUploadLicense);
+        // $('.lt-topbar-license').on('click', updateLicense);
         $('#samplingSeconds').on('click', () => tabMan.show('http'));
         $(document).keyup(function (e) {
             if (e.keyCode === 27 && $('#licenseModal').is(':visible')) {
@@ -1435,10 +1436,10 @@
             processData: false,
             contentType: false,
         }).then((data) => {
-            console.log(data);
             if (data.licenseValid) {
                 hideLicenseModal();
                 $('#invalidLicenseMessage').css('visibility', 'hidden');
+                $('#licenseText').text(data.licenseText);
             } else {
                 $('#invalidLicenseMessage').css('visibility', 'visible');
             }
@@ -1452,10 +1453,18 @@
     };
 
     var showLicenseModal = function () {
+        $('.lt-modal-card').hide();
         $('.lt-http-shader').show();
         $('#licenseModal').show();
         $('#startSampling,#stopSampling').hide();
         $('#invalidLicenseMessage').css('visibility', 'hidden');
+    };
+
+    var showInfoLicenseModal = function () {
+        $('.lt-modal-card').hide();
+        $('.lt-http-shader').show();
+        $('#licenseInfoModal').show();
+        $('#startSampling,#stopSampling').hide();
     };
 
     var hideLicenseModal = function () {
@@ -1463,6 +1472,10 @@
         $('#licenseModal,#stopSampling').hide();
         $('#startSampling').show();
         $('#uploadLicenseFile').val('');
+    };
+
+    var updateLicense = function (e) {
+        showInfoLicenseModal();
     };
 
     var startSampling = function () {
