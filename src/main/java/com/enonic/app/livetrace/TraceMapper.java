@@ -3,9 +3,12 @@ package com.enonic.app.livetrace;
 import java.util.List;
 import java.util.Map;
 
+import com.enonic.xp.context.Context;
 import com.enonic.xp.script.serializer.MapGenerator;
 import com.enonic.xp.script.serializer.MapSerializable;
 import com.enonic.xp.trace.Trace;
+import com.enonic.xp.web.WebRequest;
+import com.enonic.xp.web.WebResponse;
 
 public final class TraceMapper
     implements MapSerializable
@@ -28,7 +31,9 @@ public final class TraceMapper
         gen.value( "end", trace.getEndTime() );
         gen.value( "duration", trace.getDuration().toMillis() );
         gen.value( "time", trace.getDuration().toMillis() );
-
+        WebRequest req = (WebRequest) trace.get( "httpRequest" );
+        WebResponse res = (WebResponse) trace.get( "httpResponse" );
+        Context ctx = (Context) trace.get( "context" );
         gen.map( "data" );
         if ( !trace.isEmpty() )
         {

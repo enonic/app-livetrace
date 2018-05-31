@@ -1336,8 +1336,8 @@
                 $('#nodeName').text(node.nodeName);
                 $('#nodeIsMaster').text(node.nodeIsMaster);
                 $('#nodeXpVersion').text(node.nodeXpVersion);
-                $('#nodeJvm').text(node.nodeJvm);
-                $('#nodeJvmVersion').text(node.nodeJvmVersion);
+                // $('#nodeId').text(node.nodeId);
+                $('#nodeJvm').text(node.nodeJvm + ' ' + node.nodeJvmVersion);
                 $('#nodeUptime').text(moment.duration(node.nodeUptime).humanize());
 
                 $('#clusterName').text(cluster.clusterName);

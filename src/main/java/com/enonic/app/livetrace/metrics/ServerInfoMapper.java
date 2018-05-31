@@ -28,6 +28,7 @@ public class ServerInfoMapper
 
         gen.map( "node" );
         gen.value( "nodeName", serverInfo.getName() );
+        gen.value( "nodeId", clusterInfo.id );
         gen.value( "nodeIsMaster", clusterInfo.isMaster );
         gen.value( "nodeXpVersion", VersionInfo.get().getVersion() );
         gen.value( "nodeJvm", runtimeMXBean.getVmVendor() );

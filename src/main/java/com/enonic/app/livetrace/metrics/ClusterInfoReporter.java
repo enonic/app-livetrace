@@ -1,7 +1,5 @@
 package com.enonic.app.livetrace.metrics;
 
-import java.io.IOException;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -22,9 +20,8 @@ public class ClusterInfoReporter
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE)
     public void addReporter( final StatusReporter reporter )
-        throws IOException
     {
-        if ( reporter.getName().equals( "cluster" ) )
+        if ( reporter.getName().equals( "cluster" ) || reporter.getName().equals( "cluster.elasticsearch" ) )
         {
             this.jsonReporter = (JsonStatusReporter) reporter;
         }
@@ -33,13 +30,16 @@ public class ClusterInfoReporter
     public ClusterInfo getInfo()
     {
         ClusterInfo info = new ClusterInfo();
-        final JsonNode json = jsonReporter.getReport();
-        final JsonNode localNode = json.get( "localNode" );
-        info.name = json.get( "name" ).asText();
-        info.state = json.get( "state" ).asText();
-        info.isMaster = localNode.get( "isMaster" ).booleanValue();
-        info.id = localNode.get( "id" ).asText();
-        info.memberCount = json.get( "members" ).size();
+        if ( jsonReporter != null )
+        {
+            final JsonNode json = jsonReporter.getReport();
+            final JsonNode localNode = json.get( "localNode" );
+            info.name = json.get( "name" ).asText();
+            info.state = json.get( "state" ).asText();
+            info.isMaster = localNode.get( "isMaster" ).booleanValue();
+            info.id = localNode.get( "id" ).asText();
+            info.memberCount = json.get( "members" ).size();
+        }
         return info;
     }
 }
