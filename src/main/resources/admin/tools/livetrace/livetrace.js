@@ -1,4 +1,4 @@
-var mustache = require('/lib/xp/mustache');
+var mustache = require('/lib/mustache');
 var portalLib = require('/lib/xp/portal');
 var licenseLib = require('/lib/license');
 var adminLib = require('/lib/xp/admin');

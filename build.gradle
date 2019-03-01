@@ -1,12 +1,12 @@
 plugins {
-    id 'maven'
-    id 'com.enonic.defaults' version '1.0.3'
-    id 'com.enonic.xp.app' version '1.1.0'
+    id 'maven-publish'
+    id 'com.enonic.defaults' version '2.0.1'
+    id 'com.enonic.xp.app' version '2.0.0'
     id 'com.enonic.xp.doc' version '1.0.7'
 }
 
 app {
-    name = 'com.enonic.app.livetrace'
+    name = project.appName
     displayName = 'Live Trace'
     vendorName = 'Enonic AS'
     vendorUrl = 'http://enonic.com'
@@ -19,16 +19,16 @@ dependencies {
     compile "com.enonic.xp:web-api:${xpVersion}"
     include "com.enonic.xp:lib-content:${xpVersion}"
     include "com.enonic.xp:lib-portal:${xpVersion}"
-    include "com.enonic.xp:lib-mustache:${xpVersion}"
     include "com.enonic.xp:lib-io:${xpVersion}"
     include "com.enonic.xp:lib-auth:${xpVersion}"
     include "com.enonic.xp:lib-websocket:${xpVersion}"
     include "com.enonic.xp:lib-task:${xpVersion}"
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.xp:lib-admin:${xpVersion}"
-    include "com.enonic.lib:lib-http-client:1.0.0"
+    include "com.enonic.lib:lib-http-client:1.0.6"
     include 'com.enonic.lib:license:1.0.0'
     include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
+    include 'com.enonic.lib:lib-mustache:2.0.0-SNAPSHOT'
 }
 
 repositories {
