@@ -2,14 +2,13 @@ plugins {
     id 'maven-publish'
     id 'com.enonic.defaults' version '2.0.1'
     id 'com.enonic.xp.app' version '2.0.0'
-    id 'com.enonic.xp.doc' version '1.0.7'
 }
 
 app {
     name = project.appName
     displayName = 'Live Trace'
     vendorName = 'Enonic AS'
-    vendorUrl = 'http://enonic.com'
+    vendorUrl = 'https://enonic.com'
     systemVersion = "${xpVersion}"
 }
 
@@ -25,13 +24,14 @@ dependencies {
     include "com.enonic.xp:lib-task:${xpVersion}"
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.xp:lib-admin:${xpVersion}"
-    include "com.enonic.lib:lib-http-client:1.0.6"
-    include 'com.enonic.lib:license:1.0.0'
     include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
-    include 'com.enonic.lib:lib-mustache:2.0.0-SNAPSHOT'
+    include 'com.enonic.lib:lib-license:2.0.0-RC1'
+    include 'com.enonic.lib:lib-mustache:2.0.0-RC1'
+    include "com.enonic.lib:lib-http-client:2.0.0-RC1"
 }
 
 repositories {
+    mavenLocal()
     jcenter()
     xp.enonicRepo()
 }
