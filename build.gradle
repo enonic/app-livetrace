@@ -27,7 +27,7 @@ dependencies {
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.xp:lib-admin:${xpVersion}"
     include "com.enonic.lib:lib-http-client:1.0.0"
-    include 'com.enonic.lib:license:1.0.0'
+    include 'com.enonic.lib:license:1.0.1'
     include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
 }
 
