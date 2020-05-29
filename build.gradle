@@ -25,9 +25,16 @@ dependencies {
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.xp:lib-admin:${xpVersion}"
     include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
-    include 'com.enonic.lib:lib-license:2.0.0-RC1'
-    include 'com.enonic.lib:lib-mustache:2.0.0-RC1'
-    include "com.enonic.lib:lib-http-client:2.0.0-RC1"
+
+    // Used in
+    // src/main/java/com/enonic/app/livetrace/SamplingHandler.java
+    // src/main/resources/admin/tools/livetrace/livetrace.js
+    // src/main/resources/services/check/check.js
+    // src/main/resources/services/uploadLicense/uploadLicense.js
+    include 'com.enonic.lib:lib-license:3.0.0'
+
+    include 'com.enonic.lib:lib-mustache:2.0.0'
+    include "com.enonic.lib:lib-http-client:2.0.0"
 }
 
 repositories {
