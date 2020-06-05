@@ -11,6 +11,8 @@ body {
     left: 0;
     margin: 0;
 
+    /* This is probably done in order to scoll some element inside body */
+    /* The same statement is used inside lib-admin-ui/global.less */
     overflow-y: hidden;
 }
 
@@ -529,6 +531,8 @@ table.lt-http-req-table tbody {
     display: block;
     height: calc(100% - 24px);
     overflow: auto;
+
+    /* This gives the http-requests-table vertical scrolling */
     overflow-y: scroll;
     overflow-x: hidden;
 
@@ -977,6 +981,10 @@ table.lt-task-table td:nth-child(8) {
 
 #dashboardTab {
     background-color: #f1f1f1;
+
+    /* This gives the dashboard vertical scrolling */
+    /* Scrolling of dashboard not working #33 */
+    overflow-y: scroll;
 }
 
 .lt-dashboard-container {
