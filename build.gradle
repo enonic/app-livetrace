@@ -13,6 +13,7 @@ app {
 }
 
 dependencies {
+    // XP core
     compile "com.enonic.xp:core-api:${xpVersion}"
     compile "com.enonic.xp:portal-api:${xpVersion}"
     compile "com.enonic.xp:web-api:${xpVersion}"
@@ -24,6 +25,8 @@ dependencies {
     include "com.enonic.xp:lib-task:${xpVersion}"
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.xp:lib-admin:${xpVersion}"
+
+    // Libs
     include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
 
     // Used in

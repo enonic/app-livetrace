@@ -4,8 +4,8 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <title>Live Trace</title>
-    <link rel="stylesheet" type="text/css" href="{{assetsUri}}/admin/common/styles/_all.css">
-    <script type="text/javascript" src="{{assetsUri}}/admin/common/lib/_all.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{assetsUri}}/admin/common/styles/lib.css">
+    <script type="text/javascript" src="{{assetsUri}}/admin/common/js/lib.js"></script>
 
     <link rel="stylesheet" type="text/css" href="{{assetsUri}}/css/livetrace.css">
     <link rel="stylesheet" type="text/css" href="{{assetsUri}}/css/opentip.css">
@@ -234,7 +234,9 @@
     </div>
 </div>
 
-<script type="text/javascript">var SVC_URL = '{{svcUrl}}';</script>
+<script type="text/javascript">
+var SVC_URL = '{{svcUrl}}'; // Needed by livetrace-tool.js
+</script>
 <script type="text/javascript" src="{{assetsUri}}/js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/jquery.sparkline.min.js"></script>
 <script type="text/javascript" src="{{assetsUri}}/js/opentip-jquery.min.js"></script>
@@ -248,10 +250,10 @@
     var CONFIG = {
         adminUrl: '{{adminUrl}}',
         appId: 'toolstarter',
+        services: {}, // Workaround for i18nUrl BUG
         launcherUrl: '{{launcherUrl}}'
     };
 </script>
-<script type="text/javascript" src="{{assetsUri}}/admin/common/js/_all.js"></script>
 <script type="text/javascript" src="{{launcherPath}}" async></script>
 
 </body>
