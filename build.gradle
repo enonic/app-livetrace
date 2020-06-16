@@ -27,7 +27,9 @@ dependencies {
     include "com.enonic.xp:lib-admin:${xpVersion}"
 
     // Libs
-    include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
+
+    // Not needed for XP Menu
+    //include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
 
     // Used in
     // src/main/java/com/enonic/app/livetrace/SamplingHandler.java
