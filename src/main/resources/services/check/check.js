@@ -1,15 +1,12 @@
-var licenseLib = require('/lib/license');
+const licenseManager = require("/lib/license-manager");
 
 exports.post = function (req) {
-    var licenseDetails = licenseLib.validateLicense({
-        appKey: app.name
-    });
 
     return {
         status: 200,
         contentType: 'application/json',
         body: {
-            licenseValid: licenseDetails && !licenseDetails.expired
+            licenseValid: licenseManager.isCurrentLicenseValid()
         }
     };
 };

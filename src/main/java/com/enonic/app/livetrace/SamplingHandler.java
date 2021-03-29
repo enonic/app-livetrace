@@ -17,6 +17,8 @@ import com.enonic.xp.trace.Tracer;
 public class SamplingHandler
     implements ScriptBean
 {
+    private final String subscriptionKey = "enonic.platform.subscription";
+
     private Supplier<TraceHandler> traceHandlerSupplier;
 
     private Supplier<TraceManager> traceManagerSupplier;
@@ -73,7 +75,7 @@ public class SamplingHandler
     private boolean isValidLicense()
     {
         final LicenseManager licenseManager = licenseManagerSupplier.get();
-        final LicenseDetails licenseDetails = licenseManager.validateLicense( ApplicationKey.from( SamplingHandler.class ).toString() );
+        final LicenseDetails licenseDetails = licenseManager.validateLicense( subscriptionKey );
         return licenseDetails != null && !licenseDetails.isExpired();
     }
 

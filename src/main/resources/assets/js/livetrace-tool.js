@@ -76,7 +76,6 @@
         }
 
         _onWsOpen() {
-            console.log('connect WS (' + this.url + ')');
             this.keepAliveIntervalId = setInterval(() => {
                 if (this.connected) {
                     this.webSocket.send('{"action":"KeepAlive"}');
@@ -1483,7 +1482,6 @@
     };
 
     var doStartSampling = function () {
-        console.log('Start sampling...');
         tabMan.show('http');
         traceTable.clear();
 
@@ -1552,7 +1550,6 @@
     };
 
     var stopSampling = function () {
-        console.log('Stop sampling...');
         $('#stopSampling').hide();
         var isEmpty = traceTable.count() === 0;
 
