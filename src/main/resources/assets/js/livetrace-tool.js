@@ -1574,7 +1574,6 @@
     };
 
     var clearSampling = function () {
-        console.log('Clear sampling...');
         $('#clearSampling').hide();
         $('#startSampling').show();
         showSamplingPanel('clear');
