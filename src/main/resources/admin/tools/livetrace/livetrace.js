@@ -1,33 +1,27 @@
 // Libs
-var mustache = require('/lib/mustache');
-var portalLib = require('/lib/xp/portal');
-var licenseLib = require('/lib/license');
-var adminLib = require('/lib/xp/admin');
-
+const mustache = require('/lib/mustache');
+const portalLib = require('/lib/xp/portal');
+const adminLib = require('/lib/xp/admin');
+const licenseManager = require("/lib/license-manager");
 
 // Functions
-var assetUrl = portalLib.assetUrl;
-var getLauncherPath = adminLib.getLauncherPath;
-var getLauncherUrl = adminLib.getLauncherUrl;
-var getBaseUri = adminLib.getBaseUri;
-var serviceUrl = portalLib.serviceUrl;
-var render = mustache.render;
-var validateLicense = licenseLib.validateLicense;
+const assetUrl = portalLib.assetUrl;
+const getLauncherPath = adminLib.getLauncherPath;
+const getLauncherUrl = adminLib.getLauncherUrl;
+const getBaseUri = adminLib.getBaseUri;
+const serviceUrl = portalLib.serviceUrl;
+const render = mustache.render;
 
 
 // Constants
-var ADMIN_UI_APP = 'com.enonic.xp.admin.ui';
-var VIEW = resolve('./livetrace.html');
+const ADMIN_UI_APP = 'com.enonic.xp.admin.ui';
+const VIEW = resolve('./livetrace.html');
 
 
 // Exports
 exports.get = function (req) {
 
-    var licenseDetails = validateLicense({
-        appKey: app.name
-    });
-
-    var params = {
+    const params = {
         adminUiAssetsUrl: assetUrl({
           path: '',
           application: ADMIN_UI_APP
@@ -43,9 +37,7 @@ exports.get = function (req) {
         launcherUrl: getLauncherUrl(),
         adminUrl: getBaseUri(),
         svcUrl: serviceUrl({service: 'Z'}).slice(0, -1), // Needed by livetrace-tool.js
-        licenseText: licenseDetails && !licenseDetails.expired
-          ? 'Licensed to ' + licenseDetails.issuedTo
-          : ''
+        licenseText: licenseManager.getIssuedTo(),
     };
 
     return {

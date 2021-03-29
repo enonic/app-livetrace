@@ -1,29 +1,18 @@
 var portalLib = require('/lib/xp/portal');
 var ioLib = require('/lib/xp/io');
-var licenseLib = require('/lib/license');
+const licenseManager = require("/lib/license-manager");
 
 exports.post = function (req) {
     var licenseStream = portalLib.getMultipartStream('license');
     var license = ioLib.readText(licenseStream);
-
-    var licenseDetails = licenseLib.validateLicense({
-        license: license,
-        appKey: app.name
-    });
-    var isValid = licenseDetails && !licenseDetails.expired;
-    if (isValid) {
-        licenseLib.installLicense({
-            license: license,
-            appKey: app.name
-        });
-    }
+    const licenseInstalled = licenseManager.installLicense(license);
 
     return {
         status: 200,
         contentType: 'application/json',
         body: {
-            licenseValid: !!isValid,
-            licenseText: isValid ? 'Licensed to ' + licenseDetails.issuedTo : null
+            licenseValid: licenseInstalled,
+            licenseText: licenseManager.getIssuedTo()
         }
     };
 };
