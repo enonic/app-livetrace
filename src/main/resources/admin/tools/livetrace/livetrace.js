@@ -14,24 +14,14 @@ const render = mustache.render;
 
 
 // Constants
-const ADMIN_UI_APP = 'com.enonic.xp.admin.ui';
 const VIEW = resolve('./livetrace.html');
-
 
 // Exports
 exports.get = function (req) {
 
     const params = {
-        adminUiAssetsUrl: assetUrl({
-          path: '',
-          application: ADMIN_UI_APP
-        }),
-        launcherJsUrl: assetUrl({
-          path: '/js/launcher.js',
-          application: ADMIN_UI_APP
-        }),
         assetsUri: assetUrl({
-          path: ''
+            path: ''
         }),
         launcherPath: getLauncherPath(),
         launcherUrl: getLauncherUrl(),

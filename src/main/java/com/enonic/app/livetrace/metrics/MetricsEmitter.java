@@ -24,6 +24,8 @@ import com.enonic.xp.web.thread.ThreadPoolInfo;
 
 public class MetricsEmitter
 {
+    private static final String METRIC_NAME = "com.codahale.metrics.jetty9.InstrumentedHttpChannelListener.requests";
+
     private final ScheduledExecutorService scheduler;
 
     private final String sessionId;
@@ -77,12 +79,11 @@ public class MetricsEmitter
         final int totalThreadCount = ManagementFactory.getThreadMXBean().getThreadCount();
         final int httpThreadCount = threadPool.getThreads();
 
-        final MetricFilter metricFilter =
-            ( name, metric ) -> name.toLowerCase().contains( "org.eclipse.jetty.server.Handler.requests".toLowerCase() );
+        final MetricFilter metricFilter = ( name, metric ) -> name.toLowerCase().contains( METRIC_NAME.toLowerCase() );
         final MetricRegistry registry = Metrics.registry();
         final SortedMap<String, Timer> reqTimer = registry.getTimers( metricFilter );
 
-        final long reqCount = reqTimer.get( "org.eclipse.jetty.server.Handler.requests" ).getCount();
+        final long reqCount = reqTimer.get( METRIC_NAME ).getCount();
 
         double reqSec = 0;
         if ( lastMeasureTime != null )
