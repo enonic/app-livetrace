@@ -23,7 +23,7 @@ var handleWebSocket = function (event) {
 
     case 'message':
         var msg = JSON.parse(event.message);
-        if (msg.action = 'ping') {
+        if (msg.action === 'ping') {
             webSocketLib.send(sessionId, JSON.stringify({'action': 'pong'}));
         }
         break;
