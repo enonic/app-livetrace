@@ -38,7 +38,7 @@ dependencies {
     // src/main/resources/services/uploadLicense/uploadLicense.js
     include 'com.enonic.lib:lib-license:3.0.0'
 
-    include 'com.enonic.lib:lib-mustache:2.0.0'
+    include 'com.enonic.lib:lib-mustache:2.1.0'
     include "com.enonic.lib:lib-http-client:3.0.0"
 }
 
