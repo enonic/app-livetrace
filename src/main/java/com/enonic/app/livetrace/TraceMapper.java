@@ -31,6 +31,7 @@ public final class TraceMapper
         gen.value( "end", trace.getEndTime() );
         gen.value( "duration", trace.getDuration().toMillis() );
         gen.value( "time", trace.getDuration().toMillis() );
+        gen.value( "micro", trace.getDuration().withSeconds( 0 ).getNano() % 1000 );
         WebRequest req = (WebRequest) trace.get( "httpRequest" );
         WebResponse res = (WebResponse) trace.get( "httpResponse" );
         Context ctx = (Context) trace.get( "context" );

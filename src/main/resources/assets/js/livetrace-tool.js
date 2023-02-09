@@ -421,13 +421,13 @@
             var tdSize = $('<td>').text(formatSize(traceData.size));
             var tdDuration = $('<td>');
             if (timeDurationMode === 'duration') {
-                tdDuration.text(trace.duration + ' ms');
+                tdDuration.text(trace.duration + '.' +  trace.micro  + ' ms');
             } else {
                 tdDuration.text(formatTimeWithMillis(new Date(trace.start)));
             }
             var tdTimeBar = $('<td colspan="4">');
 
-            var barWidth = Math.ceil((trace.duration / this.maxDuration) * 100);
+            var barWidth = Math.max(0.1, Math.ceil((trace.duration / this.maxDuration) * 100));
             var bar = this.makeBar(barWidth, 0, traceSpeed(trace.duration));
             tdTimeBar.append(bar);
             tr.append([tdStatus, tdMethod, tdPath, tdType, tdSize, tdDuration, tdTimeBar]);
@@ -621,12 +621,12 @@
 
             var tdApp = $('<td>').text(app || '');
             var tdSize = $('<td>').text(traceSize);
-            var tdDuration = $('<td>').text(trace.duration + ' ms');
+            var tdDuration = $('<td>').text(trace.duration + '.' +  trace.micro  + ' ms');
             var tdTimeBar = $('<td colspan="4">');
 
             var offset = new Date(trace.start).getTime() - parentStart.getTime();
             var offsetWidth = Math.ceil((offset / this.maxDuration) * 100);
-            var barWidth = Math.ceil((trace.duration / this.maxDuration) * 100);
+            var barWidth = Math.max(0.1, Math.ceil((trace.duration / this.maxDuration) * 100));
             var bar = this.makeBar(barWidth, offsetWidth, '', this.level);
             tdTimeBar.append(bar);
             tr.append([tdTrace, tdMethod, tdScriptClass, tdApp, tdSize, tdDuration, tdTimeBar]);
