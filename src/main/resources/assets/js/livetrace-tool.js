@@ -421,7 +421,7 @@
             var tdSize = $('<td>').text(formatSize(traceData.size));
             var tdDuration = $('<td>');
             if (timeDurationMode === 'duration') {
-                tdDuration.text(trace.duration + '.' +  trace.micro  + ' ms');
+                tdDuration.text(trace.duration + '.' +  String(trace.micro).padStart(3, '0')  + ' ms');
             } else {
                 tdDuration.text(formatTimeWithMillis(new Date(trace.start)));
             }
@@ -621,7 +621,7 @@
 
             var tdApp = $('<td>').text(app || '');
             var tdSize = $('<td>').text(traceSize);
-            var tdDuration = $('<td>').text(trace.duration + '.' +  trace.micro  + ' ms');
+            var tdDuration = $('<td>').text(trace.duration + '.' +  String(trace.micro).padStart(3, '0')  + ' ms');
             var tdTimeBar = $('<td colspan="4">');
 
             var offset = new Date(trace.start).getTime() - parentStart.getTime();
