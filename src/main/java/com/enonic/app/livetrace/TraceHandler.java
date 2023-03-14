@@ -3,6 +3,7 @@ package com.enonic.app.livetrace;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -86,12 +87,12 @@ public final class TraceHandler
         {
             return;
         }
-        final String sourceScript = (String) trace.get( "script" );
+        final String sourceScript = Objects.toString( trace.get( "script" ), null ) ;
         if ( sourceScript != null && sourceScript.startsWith( liveTraceAppPrefix ) )
         {
             return;
         }
-        final String sourceApp = (String) trace.get( "app" );
+        final String sourceApp = Objects.toString( trace.get( "app" ), null );
         if ( sourceApp != null && sourceApp.equals( liveTraceApp ) )
         {
             return;
