@@ -36,7 +36,7 @@ dependencies {
     // src/main/resources/admin/tools/livetrace/livetrace.js
     // src/main/resources/services/check/check.js
     // src/main/resources/services/uploadLicense/uploadLicense.js
-    include 'com.enonic.lib:lib-license:3.0.1'
+    include 'com.enonic.lib:lib-license:3.1.0'
 
     include 'com.enonic.lib:lib-mustache:2.1.1'
     include "com.enonic.lib:lib-http-client:3.2.2"
