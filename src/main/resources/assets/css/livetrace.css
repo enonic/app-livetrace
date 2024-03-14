@@ -350,7 +350,14 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form
     align-items: center;
 }
 
-.lt-http-toolbar input {
+.lt-http-toolbar .lt-filter-system {
+    margin-top: 7px;
+    margin-bottom: 7px;
+    margin-left: 12px;
+}
+
+
+.lt-http-toolbar input[type="search"] {
     height: 24px;
 
     border-radius: 4px;
@@ -392,7 +399,7 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form
 
 .lt-http-shader {
     position: absolute;
-    top: 90px;
+    top: 138px;
     left: 0;
     width: inherit;
     height: inherit;
@@ -412,7 +419,7 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form
     align-items: center;
 
     position: absolute;
-    top: 90px;
+    top: 138px;
     z-index: 150;
 }
 

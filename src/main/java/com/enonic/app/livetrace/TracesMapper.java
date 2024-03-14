@@ -30,7 +30,7 @@ public final class TracesMapper
         for ( Trace trace : traces )
         {
             final long d = trace.getDuration().toMillis();
-            maxDuration = d > maxDuration ? d : maxDuration;
+            maxDuration = Math.max( d, maxDuration );
             if ( trace.getParentId() != null )
             {
                 traceChildren.put( trace.getParentId(), trace );
