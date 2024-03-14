@@ -16,10 +16,10 @@
     };
 
     var formatSize = function (bytes) {
-        if (bytes == undefined) {
+        if (bytes === undefined || bytes === null || bytes === -1) {
             return '-';
         }
-        if (bytes == 0) {
+        if (bytes === 0) {
             return '0 B';
         }
         var k = 1000,
@@ -125,6 +125,7 @@
             this.httpFilterUrl = '';
             this.shouldRefresh = false;
             this.httpFilters = this.initHttpFilters();
+            this.traceSystem = false;
         }
 
         clear() {
@@ -139,6 +140,10 @@
 
         setFilterUrl(filterUrl) {
             this.httpFilterUrl = filterUrl;
+        }
+
+        setTraceSystem(traceSystem) {
+            this.traceSystem = traceSystem;
         }
 
         addTraceData(traceElements, maxDuration) {
@@ -200,7 +205,11 @@
                         this.extractSubtraces(trace.children);
                     }
                 } else if (trace.name !== 'portalRequest') {
-                    traces.splice(t, 1);
+                    if (!(this.traceSystem)) {
+                        if (trace.name === 'system.rescheduleTask') {
+                            traces.splice(t, 1);
+                        }
+                    }
                 }
             }
             return forceRefresh;
@@ -398,17 +407,30 @@
             if (!trace.children || trace.children.length === 0) {
                 tdArrow.css('visibility', 'hidden');
             }
-            var tdMethod = $('<td>').text(traceData.method || '');
+            var tdMethod = $('<td>').text(traceData.method || trace.name);
+
+            new Opentip(tdMethod.get(0), JSON.stringify(traceData), {style: "tag"})
+
             var tdPath = $('<td>');
             if (traceData.url) {
                 var url = traceData.url.substring(traceData.url.indexOf('://') + 3);
                 tdPath.append($('<a target="_blank"/>').attr('href', traceData.url).text(url));
             } else {
-                tdPath.text(traceData.path || '');
+                var script = traceData.path || traceData.id;
+                if (traceData.query || traceData.filter) {
+                    script = ['query=' + traceData.query, 'types=' + traceData.contentTypes, 'filter=' + traceData.filter,
+                        'from=' + traceData.from, 'size=' + traceData.size,
+                        'hits=' + traceData.hits].join(', ');
+                } else if (traceData.parent) {
+                    script =
+                        [ traceData.parent, 'from=' + traceData.from, 'size=' + traceData.size, 'hits=' + traceData.hits].join(
+                            ', ');
+                }
+                tdPath.text(script || '');
             }
 
-            if (traceData.path && traceData.path.length > 40) {
-                var tooltip = splitLine(traceData.path, 55);
+            if (tdPath.text() && tdPath.text().length > 40) {
+                var tooltip = splitLine(tdPath.text(), 55);
                 new Opentip(tdPath.get(0), tooltip, {style: "tag"});
             }
             var tdType = $('<td>');
@@ -602,7 +624,7 @@
                         'hits=' + traceData.hits].join(', ');
                 } else if (traceData.parent) {
                     script =
-                        ['parent=' + traceData.parent, 'from=' + traceData.from, 'size=' + traceData.size, 'hits=' + traceData.hits].join(
+                        [traceData.parent, 'from=' + traceData.from, 'size=' + traceData.size, 'hits=' + traceData.hits].join(
                             ', ');
                 }
                 app = traceData.stack;
@@ -613,6 +635,8 @@
                 tdArrow.css('visibility', 'hidden');
             }
             var tdMethod = $('<td>').text(traceMethod);
+            new Opentip(tdMethod.get(0), JSON.stringify(traceData), {style: "tag"})
+
             var tdScriptClass = $('<td>').text(script).css('padding-left', trace.l * 8 + 'px');
             if (script && script.length > 40) {
                 var tooltip = splitLine(script, 55);
@@ -1263,6 +1287,7 @@
         $('#httpTraceWs').on('click', {t: 'ws'}, httpApplyFilter);
         $('#timeToggle').on('click', toggleTime);
         $('#taskTimeToggle').on('click', taskTimeToggle);
+        $('#traceSystem').on('click', traceSystemToggle);
 
         var typingTimer, doneTypingInterval = 800;
         var searchInput = $('#filterUrl');
@@ -1605,6 +1630,12 @@
         traceTable.forceRefresh();
         traceTable.display();
     };
+
+    var traceSystemToggle = function (e) {
+        traceTable.setTraceSystem($(this).is(':checked'));
+        traceTable.forceRefresh();
+        traceTable.display();
+    }
 
     var toggleTime = function (e) {
         timeDurationMode = timeDurationMode === 'duration' ? 'time' : 'duration';
