@@ -12,6 +12,9 @@ app {
     systemVersion = "${xpVersion}"
 }
 
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = sourceCompatibility
+
 dependencies {
     // XP core
     implementation "com.enonic.xp:core-api:${xpVersion}"
@@ -26,16 +29,6 @@ dependencies {
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.xp:lib-admin:${xpVersion}"
 
-    // Libs
-
-    // Not needed for XP Menu
-    //include "com.enonic.lib:lib-admin-ui:${libAdminUiVersion}"
-
-    // Used in
-    // src/main/java/com/enonic/app/livetrace/SamplingHandler.java
-    // src/main/resources/admin/tools/livetrace/livetrace.js
-    // src/main/resources/services/check/check.js
-    // src/main/resources/services/uploadLicense/uploadLicense.js
     include 'com.enonic.lib:lib-license:3.1.0'
 
     include 'com.enonic.lib:lib-mustache:2.1.1'
@@ -43,7 +36,6 @@ dependencies {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     xp.enonicRepo()
 }
