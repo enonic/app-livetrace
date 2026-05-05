@@ -53,7 +53,7 @@ public final class TraceHandler
         collectors = new ConcurrentHashMap<>();
         requestRate = new RequestRate();
         scheduler = Executors.newScheduledThreadPool( 1 );
-        liveTraceApp = ApplicationKey.from( TraceHandler.class ).toString();
+        liveTraceApp = ApplicationKey.from( "com.enonic.app.livetrace" ).toString();
         liveTraceAppPrefix = liveTraceApp + ":";
     }
 

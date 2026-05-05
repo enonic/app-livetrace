@@ -1,0 +1,5 @@
+kind: "Application"
+title: "Live Trace"
+description: "Live Trace application for Enonic XP"
+vendorName: "Enonic AS"
+vendorUrl: "https://enonic.com"
