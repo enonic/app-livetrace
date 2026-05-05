@@ -7,24 +7,20 @@ import java.lang.management.OperatingSystemMXBean;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.codahale.metrics.MetricFilter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 
 import com.enonic.xp.server.ServerInfo;
-import com.enonic.xp.util.Metrics;
-import com.enonic.xp.web.thread.ThreadPoolInfo;
 
 
 public class MetricsEmitter
 {
-    private static final String METRIC_NAME = "com.codahale.metrics.jetty9.InstrumentedHttpChannelListener.requests";
+    private static final String REQUEST_TIMER_NAME = "jetty.connections.request.time";
 
     private final ScheduledExecutorService scheduler;
 
@@ -32,7 +28,7 @@ public class MetricsEmitter
 
     private final ClusterInfoReporter clusterInfoReporter;
 
-    private final ThreadPoolInfo threadPool;
+    private final HttpThreadPoolInfoReporter threadPoolInfoReporter;
 
     private final Consumer<Object> onData;
 
@@ -40,12 +36,12 @@ public class MetricsEmitter
 
     private long lastReqCount;
 
-    public MetricsEmitter( final String sessionId, final ThreadPoolInfo threadPool, final ClusterInfoReporter clusterInfoReporter,
-                           final Consumer<Object> onData )
+    public MetricsEmitter( final String sessionId, final HttpThreadPoolInfoReporter threadPoolInfoReporter,
+                           final ClusterInfoReporter clusterInfoReporter, final Consumer<Object> onData )
     {
         this.sessionId = sessionId;
         this.clusterInfoReporter = clusterInfoReporter;
-        this.threadPool = threadPool;
+        this.threadPoolInfoReporter = threadPoolInfoReporter;
         this.onData = onData;
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
     }
@@ -77,13 +73,10 @@ public class MetricsEmitter
         final List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
 
         final int totalThreadCount = ManagementFactory.getThreadMXBean().getThreadCount();
-        final int httpThreadCount = threadPool.getThreads();
+        final int httpThreadCount = threadPoolInfoReporter.getThreadCount();
 
-        final MetricFilter metricFilter = ( name, metric ) -> name.toLowerCase().contains( METRIC_NAME.toLowerCase() );
-        final MetricRegistry registry = Metrics.registry();
-        final SortedMap<String, Timer> reqTimer = registry.getTimers( metricFilter );
-
-        final long reqCount = reqTimer.get( METRIC_NAME ).getCount();
+        final Timer requestTimer = Metrics.globalRegistry.find( REQUEST_TIMER_NAME ).timer();
+        final long reqCount = requestTimer != null ? requestTimer.count() : 0;
 
         double reqSec = 0;
         if ( lastMeasureTime != null )

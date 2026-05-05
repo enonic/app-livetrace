@@ -8,12 +8,11 @@ import org.osgi.service.component.annotations.Deactivate;
 import com.enonic.xp.index.IndexService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
-import com.enonic.xp.web.thread.ThreadPoolInfo;
 
 public class MetricsHandler
     implements ScriptBean
 {
-    private ThreadPoolInfo threadPool;
+    private HttpThreadPoolInfoReporter threadPoolInfoReporter;
 
     private IndexService indexService;
 
@@ -29,7 +28,7 @@ public class MetricsHandler
     public MetricsEmitter subscribe( final String sessionId, final Consumer<Object> onData )
     {
         return emitters.computeIfAbsent( sessionId, ( sid ) -> {
-            final MetricsEmitter emitter = new MetricsEmitter( sid, threadPool, clusterInfoReporter, onData );
+            final MetricsEmitter emitter = new MetricsEmitter( sid, threadPoolInfoReporter, clusterInfoReporter, onData );
             emitter.start();
             return emitter;
         } );
@@ -53,7 +52,7 @@ public class MetricsHandler
     @Override
     public void initialize( final BeanContext context )
     {
-        this.threadPool = context.getService( ThreadPoolInfo.class ).get();
+        this.threadPoolInfoReporter = context.getService( HttpThreadPoolInfoReporter.class ).get();
         this.indexService = context.getService( IndexService.class ).get();
         this.clusterInfoReporter = context.getService( ClusterInfoReporter.class ).get();
     }

@@ -1,0 +1,11 @@
+kind: "AdminTool"
+title:
+  text: "Live Trace"
+description:
+  text: "XP Live Trace"
+allow:
+  - "role:system.admin"
+apis:
+  - "admin:extension"
+  - "admin:event"
+  - "admin:status"
