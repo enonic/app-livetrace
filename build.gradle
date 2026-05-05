@@ -4,11 +4,6 @@ plugins {
     id 'com.enonic.xp.app'
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
-}
-
 dependencies {
     // XP core
     implementation xplibs.api.core
