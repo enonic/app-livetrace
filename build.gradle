@@ -27,5 +27,5 @@ dependencies {
 
 repositories {
     mavenCentral()
-    xp.enonicRepo()
+    xp.enonicRepo('dev')
 }
