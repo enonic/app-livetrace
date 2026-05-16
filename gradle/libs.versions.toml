@@ -1,7 +1,7 @@
 [versions]
-license = "3.1.0"
-mustache = "2.1.1"
-httpClient = "3.2.2"
+license = "4.0.0-SNAPSHOT"
+mustache = "3.0.0-SNAPSHOT"
+httpClient = "4.0.0-SNAPSHOT"
 jackson = "2.21.3"
 micrometer = "1.16.5"
 
