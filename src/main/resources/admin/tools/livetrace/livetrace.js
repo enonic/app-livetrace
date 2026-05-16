@@ -1,10 +1,11 @@
 // Libs
 const mustache = require('/lib/mustache');
 const portalLib = require('/lib/xp/portal');
+const assetLib = require('/lib/enonic/asset');
 const licenseManager = require("/lib/license-manager");
 
 // Functions
-const assetUrl = portalLib.assetUrl;
+const assetUrl = assetLib.assetUrl;
 const serviceUrl = portalLib.serviceUrl;
 const render = mustache.render;
 

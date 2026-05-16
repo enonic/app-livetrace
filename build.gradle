@@ -20,6 +20,7 @@ dependencies {
     include xplibs.event
     include xplibs.admin
 
+    include libs.lib.asset
     include libs.lib.license
     include libs.lib.mustache
     include libs.lib.http.client
