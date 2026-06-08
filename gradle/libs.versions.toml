@@ -3,7 +3,7 @@ asset = "2.0.0-SNAPSHOT"
 license = "4.0.0-SNAPSHOT"
 mustache = "3.0.0-SNAPSHOT"
 httpClient = "4.0.0-SNAPSHOT"
-jackson = "2.21.3"
+jackson = "2.22.0"
 micrometer = "1.17.0"
 
 [libraries]
