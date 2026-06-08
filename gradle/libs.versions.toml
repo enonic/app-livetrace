@@ -4,7 +4,7 @@ license = "4.0.0-SNAPSHOT"
 mustache = "3.0.0-SNAPSHOT"
 httpClient = "4.0.0-SNAPSHOT"
 jackson = "2.21.3"
-micrometer = "1.16.5"
+micrometer = "1.17.0"
 
 [libraries]
 lib-asset = { module = "com.enonic.lib:lib-asset", version.ref = "asset" }
