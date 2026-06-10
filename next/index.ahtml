@@ -488,7 +488,7 @@ so that a developer can <strong>improve the performance of XP applications</stro
 <h2 id="installation"><a class="link" href="#installation">Installation</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Live Trace application is available in <a href="https://market.enonic.com/applications">Enonic Market</a>.</p>
+<p>Live Trace application is available in <a href="https://market.enonic.com/apps">Enonic Market</a>.</p>
 </div>
 <div class="paragraph">
 <p>To install it, open the Applications XP tool and click on the <code>Install</code> button. Then select "Live Trace" from the list.</p>
@@ -777,7 +777,7 @@ maxTracingTime=5</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-06 12:56:54 UTC
+Last updated 2026-06-10 11:40:11 UTC
 </div>
 </div>
 </body>
