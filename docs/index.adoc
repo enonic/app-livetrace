@@ -10,7 +10,7 @@ image::images/lt-http.png[]
 
 == Installation
 
-Live Trace application is available in https://market.enonic.com/applications[Enonic Market].
+Live Trace application is available in https://market.enonic.com/apps[Enonic Market].
 
 To install it, open the Applications XP tool and click on the `Install` button. Then select "Live Trace" from the list.
 
