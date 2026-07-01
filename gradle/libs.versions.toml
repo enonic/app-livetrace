@@ -1,5 +1,5 @@
 [versions]
-asset = "2.0.0"
+asset = "2.0.1"
 license = "4.0.0"
 mustache = "3.0.0"
 httpClient = "4.0.0"
