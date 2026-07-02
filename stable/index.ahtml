@@ -470,6 +470,18 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Versions 2.x target XP 7+.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Live Trace allows <strong>capturing traffic</strong> that is sent to XP and analyzing its performance.</p>
 </div>
@@ -777,7 +789,7 @@ maxTracingTime=5</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-06-24 14:35:12 UTC
+Last updated 2026-07-02 06:34:09 UTC
 </div>
 </div>
 </body>
