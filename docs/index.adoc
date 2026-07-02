@@ -1,5 +1,7 @@
 = Live Trace
 
+NOTE: Versions 2.x target XP 7+.
+
 Live Trace allows *capturing traffic* that is sent to XP and analyzing its performance.
 
 This tool helps *finding bottlenecks* and what is causing them,
