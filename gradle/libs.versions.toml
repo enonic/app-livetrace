@@ -3,7 +3,7 @@ asset = "2.0.1"
 license = "4.0.0"
 mustache = "3.0.0"
 httpClient = "4.0.0"
-jackson = "2.22.0"
+jackson = "2.22.1"
 micrometer = "1.17.0"
 
 [libraries]
