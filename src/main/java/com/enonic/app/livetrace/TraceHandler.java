@@ -97,6 +97,10 @@ public final class TraceHandler
         {
             return;
         }
+        if ( sourceApp == null && "websocket".equals( trace.getName() ) )
+        {
+            return;
+        }
 
         if ( "portalRequest".equals( trace.getName() ) )
         {

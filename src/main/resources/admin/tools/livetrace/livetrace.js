@@ -2,6 +2,7 @@
 const mustache = require('/lib/mustache');
 const portalLib = require('/lib/xp/portal');
 const assetLib = require('/lib/enonic/asset');
+const adminLib = require('/lib/xp/admin');
 const licenseManager = require("/lib/license-manager");
 
 // Functions
@@ -22,6 +23,13 @@ exports.get = function (req) {
         }),
         svcUrl: serviceUrl({service: 'Z'}).slice(0, -1), // Needed by livetrace-tool.js
         licenseText: licenseManager.getIssuedTo(),
+        menuLoaderUrl: adminLib.extensionUrl({
+            application: 'com.enonic.xp.app.main',
+            extension: 'menu-loader',
+            params: {
+                theme: 'dark'
+            }
+        }),
     };
 
     return {

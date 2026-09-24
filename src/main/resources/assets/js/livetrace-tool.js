@@ -277,17 +277,18 @@
                 'service': function (t) {
                     var tData = t.trace.data;
                     var p = tData.rawpath || tData.path;
-                    return p && p.indexOf('/_/service/') > -1;
+                    return p && (p.indexOf('/_/service/') > -1 || p.indexOf('/api/') === 0 ||
+                                 (/\/_\/[^\/:]+:[^\/]+/.test(p) && !/\/_\/media:(image|attachment)\//.test(p) && !/\/_\/[^\/]+:asset\//.test(p)));
                 },
                 'asset': function (t) {
                     var tData = t.trace.data;
                     var p = tData.rawpath || tData.path;
-                    return p && p.indexOf('/_/asset/') > -1;
+                    return p && (p.indexOf('/_/asset/') > -1 || /\/_\/[^\/]+:asset\//.test(p));
                 },
                 'image': function (t) {
                     var tData = t.trace.data;
                     var p = tData.rawpath || tData.path;
-                    return p && p.indexOf('/_/image/') > -1;
+                    return p && (p.indexOf('/_/image/') > -1 || p.indexOf('/_/media:image/') > -1);
                 },
                 'ws': function (t) {
                     return t.isWebSocket();
