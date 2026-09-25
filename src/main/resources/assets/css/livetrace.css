@@ -227,9 +227,6 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form
     list-style-type: none;
     padding: 0;
 
-    /*position: relative;*/
-    /*overflow-x: auto;*/
-    /*overflow-y: hidden;*/
     height: 45px;
     width: 100%;
     background-color: #fff;
@@ -240,7 +237,7 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form
     font-family: "Roboto", sans-serif;
     font-weight: normal;
 
-    z-index: 150;
+    z-index: 1;
 }
 
 .lt-tab {
@@ -400,7 +397,7 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form
 
 .lt-http-shader {
     position: absolute;
-    top: 138px;
+    top: 155px;
     left: 0;
     width: inherit;
     height: inherit;
@@ -420,7 +417,7 @@ html, body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form
     align-items: center;
 
     position: absolute;
-    top: 138px;
+    top: 155px;
     z-index: 150;
 }
 
