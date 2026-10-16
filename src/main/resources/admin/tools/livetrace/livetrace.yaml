@@ -9,4 +9,3 @@ apis:
   - "asset"
   - "admin:extension"
   - "admin:event"
-  - "admin:status"
